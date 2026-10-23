@@ -1,6 +1,6 @@
 # QA_AUTO — Mockup da Plataforma QA Autônomo
 
-Protótipo navegável de uma plataforma de automação de testes de software guiada por IA, com 15 telas interativas e dados fictícios.
+Protótipo navegável de uma plataforma de automação de testes de software guiada por IA, com 16 telas interativas e dados fictícios.
 
 **Acesse o mockup:** https://bis-jr.github.io/QA_AUTO/
 
