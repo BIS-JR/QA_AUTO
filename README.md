@@ -9,7 +9,7 @@ Protótipo navegável de uma plataforma de automação de testes de software gui
 | Área | Telas |
 |---|---|
 | Base | Login · Onboarding (4 passos) · Dashboard central |
-| Conectar | Fontes de dados e projetos |
+| Conectar | Fontes de dados e projetos · Configurações da organização |
 | Operar | 01 Test Case Genesis · 02 API Contract Self-healing · 03 Natural Language Assertions · 04 Mutation Testing · 05 Test Debt Scoring · 06 Regulatory Compliance · 07 Performance Prediction · 08 Visual Regression · 09 Chaos Engineering · 10 Cross-browser/Device Matrix |
 | Analisar | Relatórios |
 

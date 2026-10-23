@@ -225,7 +225,7 @@ class Component extends DCLogic {
   toast(msg) { clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(() => this.setState({ toast: null }), 3600); }
   navFor(active) {
     const NAV = [
-      ['Conectar', [['fontes','FD','Fontes de dados','Fontes.dc.html'],['projetos','PJ','Projetos','Fontes.dc.html']]],
+      ['Conectar', [['fontes','FD','Fontes de dados','Fontes.dc.html'],['projetos','PJ','Projetos','Fontes.dc.html'],['config','CF','Configurações','Config.dc.html']]],
       ['Operar', [['genesis','01','Test Case Genesis','Genesis.dc.html'],['healing','02','API Self-healing','SelfHealing.dc.html',3],['assert','03','NL Assertions','Assertions.dc.html'],['mutation','04','Mutation Testing','Mutation.dc.html'],['debt','05','Test Debt Scoring','TestDebt.dc.html'],['compliance','06','Compliance','Compliance.dc.html'],['perf','07','Performance Prediction','Performance.dc.html',1],['visual','08','Visual Regression','VisualRegression.dc.html',6],['chaos','09','Chaos Engineering','Chaos.dc.html'],['matrix','10','Browser/Device Matrix','Matrix.dc.html']]],
       ['Analisar', [['dash','DC','Dashboard central','Main.dc.html'],['reports','RL','Relatórios','Reports.dc.html']]]
     ];
