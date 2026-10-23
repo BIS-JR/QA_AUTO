@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>09 Chaos Engineering Autônomo</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="./dc-lite.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F8FAFC;font-family:Inter,system-ui,sans-serif;color:#0F172A;font-size:14px}
+*{box-sizing:border-box}
+a{color:#2563EB}a:hover{color:#1D4ED8}
+button,input,select,textarea{font:inherit}
+:focus-visible{outline:2px solid #4F46E5;outline-offset:2px}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.top{height:56px;position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:12px;padding:0 16px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;color:#0F172A;text-decoration:none;white-space:nowrap}
+.logo:hover{color:#0F172A}
+.mark{width:28px;height:28px;border-radius:8px;background:#4F46E5;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.sel{height:36px;max-width:190px;border:1px solid #CBD5E1;border-radius:8px;padding:0 10px;background:#fff;color:#0F172A}
+.search{flex:1;min-width:0;max-width:460px;display:flex;align-items:center;gap:8px;height:36px;border:1px solid #CBD5E1;border-radius:8px;padding:0 10px;color:#64748B;background:#fff}
+.search input{border:0;outline:0;flex:1;min-width:0;background:transparent;color:#0F172A}
+.search:focus-within{box-shadow:0 0 0 2px #C7D2FE;border-color:#818CF8}
+.sp{flex:1}
+kbd{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;border:1px solid #E2E8F0;border-radius:4px;padding:1px 5px;color:#64748B}
+.ib{width:40px;height:40px;border:0;background:transparent;border-radius:8px;display:grid;place-items:center;color:#334155;cursor:pointer;position:relative;flex:none}
+.ib:hover{background:#F1F5F9}
+.cnt{position:absolute;top:3px;right:3px;min-width:17px;height:17px;border-radius:9px;background:#DC2626;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.av{width:36px;height:36px;border-radius:50%;border:0;background:#E0E7FF;color:#3730A3;display:grid;place-items:center;cursor:pointer;flex:none}
+.body{flex:1;display:flex;flex-wrap:wrap;align-items:stretch}
+.side{width:256px;background:#fff;border-right:1px solid #E2E8F0;padding:12px;display:flex;flex-direction:column;gap:2px}
+.grp{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#64748B;padding:14px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:#334155;text-decoration:none;min-height:38px}
+.nav:hover{background:#F1F5F9;color:#0F172A}
+.nav.on{background:rgba(79,70,229,.1);color:#4338CA;font-weight:600}
+.nav.on:hover{color:#4338CA}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;width:26px;height:20px;border-radius:5px;background:#F1F5F9;color:#475569;display:grid;place-items:center;flex:none}
+.nav.on .num{background:#4F46E5;color:#fff}
+.lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:#FEE2E2;color:#991B1B}
+.side.alt{width:76px}.side.alt .lbl,.side.alt .nb,.side.alt .grp{display:none}
+.navw{position:relative}
+.pip{position:absolute;left:100%;top:-8px;z-index:45;padding-left:10px;width:400px;cursor:default}
+.pipw{background:#0F172A;color:#CBD5E1;border:1px solid #334155;border-radius:12px;box-shadow:0 20px 50px rgba(15,23,42,.45);overflow:hidden;font-weight:400;animation:pipin .16s ease-out}
+@keyframes pipin{from{opacity:0;transform:translateY(4px)}}
+@media(prefers-reduced-motion:reduce){.pipw{animation:none}}
+.piph{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;background:#1E293B;color:#fff;font-size:13px}
+.piph b{flex:1;font-weight:600}
+.pipn{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;background:#4F46E5;color:#fff;border-radius:5px;padding:2px 6px}
+.pipx{width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:#CBD5E1;display:grid;place-items:center;cursor:pointer;flex:none}
+.pipx:hover{background:#334155;color:#fff}
+.pipb{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.55}
+.pipb h4{margin:0;color:#38BDF8;font-size:15px;font-weight:600}
+.pipb p{margin:0}
+.pipe{background:#1E293B;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.pipe span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#22D3EE}
+.pipm{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pipm div{background:#1E293B;border-radius:8px;padding:8px 10px}
+.pipm dt{font-size:10.5px;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em}
+.pipm dd{margin:2px 0 0;color:#fff;font-size:12px}
+@media(max-width:760px){.pip{left:0;top:100%;padding-left:0;padding-top:6px;width:100%}}
+.main{flex:999 1 560px;min-width:0;padding:24px;display:flex;flex-direction:column;gap:24px}
+.crumb{font-size:13px;color:#64748B;display:flex;gap:6px;flex-wrap:wrap}
+.crumb b{color:#334155;font-weight:500}
+.ph{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+h1{font-size:24px;font-weight:700;margin:0;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:600;margin:0}
+h3{font-size:14px;font-weight:600;margin:0}
+.sub{color:#475569;margin:4px 0 0}
+.mut{color:#64748B}
+.card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.ch{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #F1F5F9}
+.cb{padding:20px}
+.btn{height:36px;padding:0 14px;border-radius:8px;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none;font-size:14px}
+.btn.p{background:#4F46E5;color:#fff}.btn.p:hover{background:#4338CA;color:#fff}
+.btn.o{background:#fff;border-color:#CBD5E1;color:#0F172A}.btn.o:hover{background:#F8FAFC;color:#0F172A}
+.btn.g{background:transparent;color:#334155}.btn.g:hover{background:#F1F5F9}
+.btn.d{background:#DC2626;color:#fff}.btn.d:hover{background:#B91C1C}
+.btn.sm{height:32px;padding:0 10px;font-size:13px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.bd{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.b-ok{background:#DCFCE7;color:#166534}.b-warn{background:#FEF3C7;color:#92400E}.b-high{background:#FFEDD5;color:#9A3412}.b-crit{background:#FEE2E2;color:#991B1B}.b-info{background:#DBEAFE;color:#1E40AF}.b-mute{background:#F1F5F9;color:#475569}.b-pri{background:#E0E7FF;color:#3730A3}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;font-weight:600;color:#64748B;padding:10px 16px;border-bottom:1px solid #E2E8F0;white-space:nowrap;background:#F8FAFC}
+td{padding:12px 16px;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.inp{height:36px;border:1px solid #CBD5E1;border-radius:8px;padding:0 10px;background:#fff;color:#0F172A;width:100%}
+.inp:focus{outline:0;box-shadow:0 0 0 2px #C7D2FE;border-color:#818CF8}
+.inp:disabled{background:#F1F5F9;color:#64748B}
+.lab{font-size:13px;font-weight:500;color:#334155;display:flex;flex-direction:column;gap:6px}
+.g12{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+.toast{position:fixed;right:24px;bottom:24px;z-index:60;background:#0F172A;color:#fff;border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(15,23,42,.25);max-width:calc(100vw - 48px)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.typ{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #E2E8F0;border-radius:10px;cursor:pointer;background:#fff}
+.typ.on{border-color:#4F46E5;background:#EEF2FF}
+.typ input{margin-top:3px;accent-color:#4F46E5}
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tli{display:flex;gap:14px;position:relative;padding-bottom:16px}
+.tli::before{content:"";position:absolute;left:7px;top:18px;bottom:0;width:2px;background:#E2E8F0}
+.tli:last-child::before{display:none}
+.tdot{width:16px;height:16px;border-radius:50%;flex:none;margin-top:2px;border:3px solid #fff;box-shadow:0 0 0 1px #CBD5E1}
+.live{width:8px;height:8px;border-radius:50%;background:#DC2626;animation:pl 1s ease-in-out infinite}
+@keyframes pl{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.live{animation:none}}
+.mx{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:6px}
+@media(max-width:1000px){.s3{grid-column:span 6}.s4,.s5,.s6,.s7,.s8{grid-column:span 12}}
+@media(max-width:760px){.side{display:none;width:100%;border-right:0;border-bottom:1px solid #E2E8F0}.side.alt{display:flex;width:100%}.side.alt .lbl,.side.alt .nb,.side.alt .grp{display:revert}.hide-m{display:none}.main{padding:16px}.s3{grid-column:span 12}}
+</style>
+</helmet>
+<div class="app">
+<div style="height: 128px; background: #0F172A; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 0 20px"><img src="assets/fastinnovation.png" alt="Fast Innovation AI" style="height: 112px; width: auto; max-width: 100%; justify-self: start"><img src="assets/outtech.png" alt="OUTTECH Services IT" style="height: 88px; width: auto; max-width: 100%; justify-self: center"><img src="assets/qa-autonomous.png" alt="QA Autonomous" style="height: 96px; width: auto; max-width: 100%; justify-self: end"></div>
+<header class="top">
+<button class="ib" type="button" aria-label="Alternar menu lateral" onClick="{{toggleSide}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+<a class="logo" href="Main.dc.html"><span class="mark">QA</span><span class="hide-m">QA Autônomo</span></a>
+<label class="sr" for="proj">Projeto ativo</label>
+<select id="proj" class="sel"><option>Checkout Web</option><option>App Mobile</option><option>API Pagamentos</option></select>
+<div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input type="search" aria-label="Busca global" placeholder="Buscar histórias, testes, quebras…"><kbd class="hide-m">⌘K</kbd></div>
+<div class="sp"></div>
+<button class="ib" type="button" aria-label="Notificações: 4 alertas pendentes"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span class="cnt">4</span></button>
+<button class="av" type="button" aria-label="Menu do usuário"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></button>
+</header>
+<div class="body">
+<nav class="{{sideCls}}" aria-label="Navegação principal">
+<sc-for list="{{nav}}" as="g" hint-placeholder-count="3">
+<div class="grp">{{g.title}}</div>
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+<div class="navw" onMouseEnter="{{it.enter}}" onMouseLeave="{{it.leave}}" onContextMenu="{{it.ctx}}" onFocus="{{it.enter}}">
+<sc-if value="{{it.active}}" hint-placeholder-val="{{ false }}"><a class="nav on" href="{{it.href}}" aria-current="page"><span class="num">{{it.num}}</span><span class="lbl">{{it.label}}</span></a></sc-if>
+<sc-if value="{{it.off}}" hint-placeholder-val="{{ true }}"><a class="nav" href="{{it.href}}"><span class="num">{{it.num}}</span><span class="lbl">{{it.label}}</span><sc-if value="{{it.hasBadge}}" hint-placeholder-val="{{ false }}"><span class="nb">{{it.badge}}</span></sc-if></a></sc-if>
+<sc-if value="{{it.open}}" hint-placeholder-val="{{ false }}">
+<div class="pip" role="dialog" aria-label="{{it.info.title}}">
+<div class="pipw">
+<div class="piph"><span class="pipn">{{it.num}}</span><b>{{it.info.title}}</b><button type="button" class="pipx" aria-label="Fechar descrição" onClick="{{it.close}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+<div class="pipb">
+<h4>{{it.info.head}}</h4>
+<p>{{it.info.text}}</p>
+<div class="pipe"><span>Exemplo prático</span><p>{{it.info.ex}}</p></div>
+<sc-if value="{{it.info.hasMatrix}}" hint-placeholder-val="{{ true }}"><dl class="pipm"><div><dt>Atuação</dt><dd>{{it.info.tipo}}</dd></div><div><dt>Benefício</dt><dd>{{it.info.benef}}</dd></div><div><dt>Impacto</dt><dd>{{it.info.impacto}}</dd></div></dl></sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</sc-for>
+</nav>
+<main class="main">
+<div class="crumb"><span>Operar</span><span aria-hidden="true">›</span><b>09 Chaos Engineering Autônomo</b></div>
+<div class="ph">
+<div><h1>Chaos Engineering Autônomo</h1><p class="sub">Planeje, execute e acompanhe experimentos de caos com relatório de resiliência automático.</p></div>
+<span class="bd b-info">Ambiente seguro: staging</span>
+</div>
+
+<div class="g12">
+<div class="card s5">
+<div class="ch"><h2>Estúdio de experimento</h2></div>
+<div class="cb" style="display:flex;flex-direction:column;gap:16px">
+<label class="lab">Nome do experimento<input class="inp" value="{{name}}" onChange="{{onName}}"></label>
+<fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:8px"><legend style="font-size:13px;font-weight:500;color:#334155;padding:0;margin-bottom:6px">Tipo de injeção</legend>
+<sc-for list="{{types}}" as="t" hint-placeholder-count="3"><label class="{{t.cls}}"><input type="radio" name="inj" checked="{{t.on}}" onChange="{{t.pick}}"><span><b style="display:block">{{t.label}}</b><span class="mut" style="font-size:12px">{{t.desc}}</span></span></label></sc-for>
+</fieldset>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<label class="lab">Alvo<select class="inp" value="{{target}}" onChange="{{onTarget}}"><option value="payments-svc">payments-svc</option><option value="inventory-svc">inventory-svc</option><option value="orders-api">orders-api</option><option value="notifications">notifications</option></select></label>
+<label class="lab">Duração<select class="inp"><option>5 minutos</option><option>10 minutos</option><option>15 minutos</option></select></label>
+<label class="lab">Ambiente<select class="inp" disabled="{{true}}"><option>staging</option></select></label>
+<label class="lab">Intensidade<select class="inp"><option>{{intensity}}</option></select></label>
+</div>
+<fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:8px"><legend style="font-size:13px;font-weight:500;color:#334155;padding:0;margin-bottom:6px">Agendamento</legend>
+<div class="row" style="gap:16px"><label class="row" style="gap:6px"><input type="radio" name="when" checked="{{now}}" onChange="{{setNow}}" style="accent-color:#4F46E5">Gatilho manual</label><label class="row" style="gap:6px"><input type="radio" name="when" checked="{{later}}" onChange="{{setLater}}" style="accent-color:#4F46E5">Agendar</label></div>
+<sc-if value="{{later}}" hint-placeholder-val="{{ false }}"><label class="lab">Data e hora<input class="inp" type="datetime-local" defaultValue="2026-10-23T02:00"></label></sc-if>
+</fieldset>
+<div class="row" style="justify-content:flex-end;padding-top:4px">
+<sc-if value="{{later}}" hint-placeholder-val="{{ false }}"><button class="btn o" type="button" onClick="{{schedule}}">Agendar experimento</button></sc-if>
+<button class="btn d" type="button" onClick="{{runNow}}" disabled="{{running}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"></path></svg>Executar agora</button>
+</div>
+</div>
+</div>
+
+<div class="card s7">
+<div class="ch"><div><h2>Timeline de eventos</h2><p class="sub" style="font-size:13px">{{runTitle}}</p></div>
+<sc-if value="{{running}}" hint-placeholder-val="{{ false }}"><span class="bd b-crit"><span class="live" aria-hidden="true"></span>Em execução · {{elapsed}}</span></sc-if>
+<sc-if value="{{done}}" hint-placeholder-val="{{ false }}"><span class="bd b-ok">Concluído</span></sc-if></div>
+<div class="cb">
+<sc-if value="{{idle}}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:40px 16px;color:#475569"><span style="width:48px;height:48px;border-radius:12px;background:#EEF2FF;color:#4F46E5;display:grid;place-items:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"></path></svg></span><h3 style="color:#0F172A">Nenhum experimento em execução</h3><p style="margin:0;max-width:360px">Configure o experimento ao lado e clique em “Executar agora” para acompanhar as injeções e o comportamento observado.</p></div></sc-if>
+<ol class="tl" aria-live="polite">
+<sc-for list="{{events}}" as="e" hint-placeholder-count="0">
+<li class="tli"><span class="tdot" style="background: {{e.color}}"></span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><div class="row" style="justify-content:space-between"><span style="font-weight:600">{{e.title}}</span><span class="mono mut" style="font-size:12px">{{e.t}}</span></div><span style="font-size:13px;color:#334155">{{e.obs}}</span></div></li>
+</sc-for>
+</ol>
+</div>
+</div>
+
+<sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+<div class="card s12">
+<div class="ch"><div><h2>Relatório de resiliência</h2><p class="sub" style="font-size:13px">{{name}} · {{verdict}}</p></div><div class="row"><span class="bd {{scoreCls}}">Score de resiliência {{score}}/100</span><a class="btn o sm" href="Reports.dc.html">Ver em Relatórios</a></div></div>
+<div class="tw"><table>
+<thead><tr><th scope="col">Circuito</th><th scope="col">Timeout</th><th scope="col">Retry com backoff</th><th scope="col">Fallback</th><th scope="col">Circuit breaker</th><th scope="col">Degradação graciosa</th><th scope="col">Observação</th></tr></thead>
+<tbody><sc-for list="{{matrix}}" as="m" hint-placeholder-count="4"><tr><td class="mono" style="font-size:13px;white-space:nowrap">{{m.circuit}}</td><sc-for list="{{m.cells}}" as="c" hint-placeholder-count="5"><td><span class="mx" style="background: {{c.bg}}; color: {{c.fg}}" aria-label="{{c.label}}" title="{{c.label}}"><sc-if value="{{c.pass}}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if><sc-if value="{{c.fail}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></sc-if></span></td></sc-for><td class="mut" style="font-size:13px;min-width:220px">{{m.note}}</td></tr></sc-for></tbody>
+</table></div>
+</div>
+</sc-if>
+
+<div class="card s12">
+<div class="ch"><h2>Histórico de experimentos</h2><button class="btn g sm" type="button" onClick="{{toggleHist}}" aria-expanded="{{histOpenStr}}">{{histLabel}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="transform: rotate({{histRot}}deg)"><path d="m6 9 6 6 6-6"></path></svg></button></div>
+<sc-if value="{{histOpen}}" hint-placeholder-val="{{ true }}">
+<div class="tw"><table>
+<thead><tr><th scope="col">Experimento</th><th scope="col">Tipo</th><th scope="col">Alvo</th><th scope="col">Data</th><th scope="col">Duração</th><th scope="col">Resultado</th></tr></thead>
+<tbody><sc-for list="{{history}}" as="h" hint-placeholder-count="4"><tr><td style="font-weight:500">{{h.name}}</td><td>{{h.type}}</td><td class="mono" style="font-size:13px">{{h.target}}</td><td class="mono mut" style="font-size:12px">{{h.date}}</td><td class="mono" style="font-size:13px">{{h.dur}}</td><td><span class="bd {{h.cls}}">{{h.res}}</span></td></tr></sc-for></tbody>
+</table></div>
+</sc-if>
+</div>
+</div>
+</main>
+</div>
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div class="toast" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{{toast}}</span></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  state = { side: false, toast: null, name: 'Queda do payments-svc no checkout', type: 'down', target: 'payments-svc', when: 'now', phase: 'idle', step: 0, hist: true,
+    history: [
+      { name: 'Queda do inventory-svc', type: 'Queda de microsserviço', target: 'inventory-svc', date: '21/10 09:20', dur: '10 min', res: 'Pass · degradação graciosa', cls: 'b-ok' },
+      { name: 'Latência no gateway', type: 'Latência (+800 ms)', target: 'api-gateway', date: '17/10 02:00', dur: '15 min', res: 'Parcial · 1 circuito falhou', cls: 'b-warn' },
+      { name: 'CPU no orders-api', type: 'Saturação de CPU (90%)', target: 'orders-api', date: '10/10 02:00', dur: '10 min', res: 'Fail · autoscaling lento', cls: 'b-crit' },
+      { name: 'Queda das notificações', type: 'Queda de microsserviço', target: 'notifications', date: '03/10 02:00', dur: '5 min', res: 'Pass', cls: 'b-ok' }
+    ] };
+  componentWillUnmount() { clearTimeout(this._t); clearInterval(this._i); }
+  toast(msg) { clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(() => this.setState({ toast: null }), 3600); }
+  navFor(active) {
+    const NAV = [
+      ['Conectar', [['fontes','FD','Fontes de dados','Fontes.dc.html'],['projetos','PJ','Projetos','Fontes.dc.html']]],
+      ['Operar', [['genesis','01','Test Case Genesis','Genesis.dc.html'],['healing','02','API Self-healing','SelfHealing.dc.html',3],['assert','03','NL Assertions','Assertions.dc.html'],['mutation','04','Mutation Testing','Mutation.dc.html'],['debt','05','Test Debt Scoring','TestDebt.dc.html'],['compliance','06','Compliance','Compliance.dc.html'],['perf','07','Performance Prediction','Performance.dc.html',1],['visual','08','Visual Regression','VisualRegression.dc.html',6],['chaos','09','Chaos Engineering','Chaos.dc.html'],['matrix','10','Browser/Device Matrix','Matrix.dc.html']]],
+      ['Analisar', [['dash','DC','Dashboard central','Main.dc.html'],['reports','RL','Relatórios','Reports.dc.html']]]
+    ];
+    const INFO = {
+      genesis: ['01. Test Case Genesis from User Story', 'Geração Nativa sem QA Humano', 'A IA interpreta requisitos e critérios de aceite descritos em histórias do Jira ou Azure DevOps, transformando-os diretamente em scripts de teste executáveis (Cypress, Playwright).', 'História: “Como cliente, quero pagar via PIX para aprovação instantânea.” A IA interpreta o critério e gera scripts automatizados validando: QR Code válido, simulação de timeout bancário e expiração do código PIX.', 'Geração de Testes', 'Cria testes diretos do Jira/Azure', 'Automação a partir do requisito'],
+      healing: ['02. API Contract Self-healing', 'Detecção Automática de Quebras', 'Identifica incompatibilidades de contrato entre microsserviços antes da ida a produção, sugerindo ou aplicando correções no schema da API e nos testes dependentes. Evita regressões em ambientes distribuídos e elimina manutenções manuais repetitivas de código de teste.', 'O time backend renomeia o campo customer_id para user_uuid na API de Checkout. A IA intercepta a quebra no CI/CD, atualiza o DTO da API nos testes integrados e submete uma Pull Request de ajuste pronta para aprovação.', 'Manutenção Autônoma', 'Corrige quebras de contratos de API', 'Redução de bugs em microsserviços'],
+      assert: ['03. Natural Language Test Assertions', 'Sem Escrever Código', 'Permite que POs e analistas de negócio escrevam validações em português fluente ou inglês simples. Por meio de tradução por LLM, a IA converte instruções semânticas diretamente em asserções dinâmicas de DOM e estado de aplicação.', '“Quando o usuário clica em comprar, o saldo deve diminuir e o carrinho deve zerar.” A IA valida os seletores e o saldo na tela.', 'Interface sem Código', 'POs escrevem validações em texto', 'Inclusão de times não técnicos'],
+      mutation: ['04. Mutation Testing com LLM', 'Avaliando a Eficácia Real dos Testes', 'O agente de IA introduz pequenas mutações deliberadas no código-fonte para checar se a suíte de testes consegue detectar os erros. Supera a métrica tradicional de cobertura de linha, garantindo que os testes realmente validem a lógica de negócios e não apenas passem passivamente.', 'A IA altera if (desconto > 50) para if (desconto >= 50). Se nenhum teste falhar, a IA alerta a vulnerabilidade e cria o teste faltante.', 'Auditoria de Testes', 'Valida eficácia real das suítes', 'Eliminação de falsos positivos'],
+      debt: ['05. Test Debt Scoring', 'Priorização de QA por Nível de Risco', 'Calcula dinamicamente a “Dívida de Testes” de cada módulo do sistema, cruzando taxa de alteração de código, complexidade ciclomática e cobertura real. Permite focar o esforço do time de QA nas áreas com maior probabilidade de impacto crítico nos negócios.', 'O módulo de Pagamentos possui 85% de cobertura, porém recebeu 30 commits recentes sem testes de borda. O sistema eleva o Score de Dívida para Risco Alto e exige reforço imediato na suíte.', 'Gestão de Risco', 'Mapeia módulos sem cobertura crítica', 'Priorização inteligente de QA'],
+      compliance: ['06. Regulatory Compliance Test Suite', 'Conformidade Regulatória Automática', 'Gera automaticamente testes focados em normas globais e locais como PCI-DSS, ISO 27001, LGPD e GDPR, ajustando-se às exigências do mercado do cliente. Fundamental para empresas do setor financeiro, e-commerce e saúde, além de acelerar processos de auditoria e exportação.', 'Para um app de pagamentos se expandindo para a Europa, a IA executa 150 testes validando criptografia de PII, retenção de logs e mecânica de consentimento explícito.', 'Conformidade', 'Suítes para PCI, LGPD, GDPR, ISO', 'Aceleração de auditorias globais'],
+      perf: ['07. Performance Prediction Model', 'Previsão Sem Testes Manuais de Carga', 'Prevê gargalos de performance em produção antes do deploy, analisando o novo código e o histórico de execuções. Substitui os caros e demorados testes de estresse manuais por análises preditivas contínuas na esteira de CI/CD.', 'Um desenvolvedor envia uma Pull Request contendo uma nova consulta com loop N+1 no banco de dados. A IA detecta a consulta e projeta degradação do tempo de resposta de 150 ms para 3,8 s quando a aplicação atingir 1.000 requisições simultâneas.', 'Análise Preditiva', 'Simula carga antes do deploy', 'Prevenção proativa de gargalos'],
+      visual: ['08. Visual Regression por Difusão', 'Acurácia Pixel a Pixel', 'Utiliza modelos de difusão treinados para comparar interfaces e identificar regressões visuais sutis que ferramentas tradicionais (como Selenium) ignoram. Filtra falsos positivos causados por renderização de fontes ou variações imperceptíveis de anti-aliasing.', 'Uma atualização de CSS move o botão “Finalizar Compra” 4px para o lado no iPhone 14. A IA identifica a quebra de alinhamento e notifica o time visual.'],
+      chaos: ['09. Chaos Engineering Autônomo', 'Resiliência Proativa de Sistemas', 'Planeja e executa experimentos de caos (injeção de latência, queda de microsserviços, saturação de CPU) de forma autônoma em staging. Gera relatórios completos indicando se a aplicação degradou de forma graciosa e se os circuitos de fallback funcionaram.', 'O agente simula a queda do banco de dados Redis durante o checkout e valida se o sistema chaveou com sucesso para o banco relacional sem derrubar a sessão do usuário.'],
+      matrix: ['10. Cross-browser / Device AI Prioritization', 'Análise Baseada no Perfil Real do Usuário', 'Conecta-se à telemetria de produção (Google Analytics, Mixpanel) para identificar exatamente quais dispositivos e navegadores geram maior tráfego, e cancela execuções de testes em combinações de navegadores legados que representam menos de 0,01% dos acessos.', 'Reduz a matriz de 120 combinações para as 8 mais críticas (ex.: Safari iOS 17 e Chrome Android), reduzindo o tempo de CI/CD de 45 para 6 minutos.']
+    };
+    const tip = this.state.tip;
+    const hide = () => { clearTimeout(this._pip); if (this.state.tip) this.setState({ tip: null }); };
+    return NAV.map(([title, items]) => ({ title, items: items.map(([id, num, label, href, badge]) => {
+      const d = INFO[id];
+      const info = d ? { title: d[0], head: d[1], text: d[2], ex: d[3], tipo: d[4], benef: d[5], impacto: d[6], hasMatrix: !!d[4] } : {};
+      return { num, label, href, badge, hasBadge: !!badge, active: id === active, off: id !== active, info, open: !!d && tip === id,
+        enter: () => { if (!d) return; clearTimeout(this._pip); this._pip = setTimeout(() => this.setState({ tip: id }), 700); },
+        leave: hide,
+        ctx: (e) => { if (!d) return; e.preventDefault(); clearTimeout(this._pip); this.setState({ tip: id }); },
+        close: hide };
+    }) }));
+  }
+  script(type, target) {
+    const I = { latency: 'Latência de +800 ms injetada em ' + target, down: target + ' derrubado (0 de 3 réplicas)', cpu: 'CPU de ' + target + ' saturada a 90%' }[type];
+    return [
+      ['T+00:00', 'Linha de base coletada', 'p95 checkout 210 ms · erro 0,1% · 312 req/s', '#64748B'],
+      ['T+00:30', 'Injeção iniciada', I, '#DC2626'],
+      ['T+00:42', 'Timeout acionado', 'checkout-web encerrou chamadas após 2 s, conforme configuração', '#D97706'],
+      ['T+01:10', 'Circuit breaker aberto', 'Após 5 falhas consecutivas, chamadas para ' + target + ' foram interrompidas', '#D97706'],
+      ['T+01:15', 'Fallback ativado', type === 'down' ? 'Pagamento enfileirado para processamento posterior; usuário vê “pedido em análise”' : 'Respostas servidas do cache com dados de até 60 s', '#16A34A'],
+      ['T+03:40', 'Alerta disparado', 'PagerDuty notificou o plantão em 2m10s (meta: 5 min)', '#2563EB'],
+      ['T+05:00', 'Injeção encerrada · recuperação', 'Circuit breaker fechado em 18 s; métricas voltaram à linha de base', '#16A34A']
+    ];
+  }
+  runNow() {
+    clearInterval(this._i);
+    this.setState({ phase: 'running', step: 1 });
+    this._i = setInterval(() => {
+      const n = this.state.step + 1;
+      if (n > 7) { clearInterval(this._i); this.setState({ phase: 'done' }); this.toast('Experimento concluído. Relatório de resiliência gerado.'); const s = this.state; this.setState({ history: [{ name: s.name, type: { latency: 'Latência (+800 ms)', down: 'Queda de microsserviço', cpu: 'Saturação de CPU (90%)' }[s.type], target: s.target, date: '21/10 agora', dur: '5 min', res: 'Parcial · 1 falha', cls: 'b-warn' }].concat(s.history) }); }
+      else this.setState({ step: n });
+    }, 800);
+  }
+  renderVals() {
+    const s = this.state;
+    const TYPES = [['latency', 'Latência', 'Adiciona atraso às respostas do alvo'], ['down', 'Queda de microsserviço', 'Derruba todas as réplicas do alvo'], ['cpu', 'Saturação de CPU', 'Consome CPU até o limite configurado']];
+    const types = TYPES.map(([id, label, desc]) => ({ label, desc, on: s.type === id, cls: 'typ' + (s.type === id ? ' on' : ''), pick: () => this.setState({ type: id }) }));
+    const ev = this.script(s.type, s.target).slice(0, s.phase === 'done' ? 7 : s.step).map(([t, title, obs, color]) => ({ t, title, obs, color }));
+    const C = (p) => (p ? { pass: true, fail: false, bg: '#DCFCE7', fg: '#166534', label: 'Pass' } : { pass: false, fail: true, bg: '#FEE2E2', fg: '#991B1B', label: 'Fail' });
+    const matrix = [
+      ['checkout-web → ' + s.target, [1, 1, 1, 1, 1], 'Usuário recebeu “pedido em análise”; nenhuma perda de pedido.'],
+      ['orders-api → ' + s.target, [1, 0, 1, 1, 1], 'Retry sem jitter gerou picos sincronizados de requisições.'],
+      ['api-gateway → orders-api', [1, 1, 1, 1, 1], 'Sem impacto perceptível.'],
+      ['notifications → orders-api', [1, 1, 0, 1, 0], 'E-mail de confirmação não foi enviado nem reprocessado.']
+    ].map(([circuit, cells, note]) => ({ circuit, note, cells: cells.map((v) => C(!!v)) }));
+    const fails = matrix.reduce((a, m) => a + m.cells.filter((c) => c.fail).length, 0);
+    const score = 100 - fails * 9;
+    return {
+      nav: this.navFor('chaos'),
+      sideCls: 'side' + (s.side ? ' alt' : ''),
+      toggleSide: () => this.setState({ side: !s.side }),
+      hasToast: !!s.toast, toast: s.toast,
+      name: s.name, onName: (e) => this.setState({ name: e.target.value }),
+      types, target: s.target, onTarget: (e) => this.setState({ target: e.target.value }),
+      intensity: { latency: '+800 ms', down: '100% das réplicas', cpu: '90% de CPU' }[s.type],
+      now: s.when === 'now', later: s.when === 'later', setNow: () => this.setState({ when: 'now' }), setLater: () => this.setState({ when: 'later' }),
+      schedule: () => this.toast('Experimento agendado para 23/10 às 02:00 (staging).'),
+      runNow: () => this.runNow(),
+      running: s.phase === 'running', done: s.phase === 'done', idle: s.phase === 'idle',
+      elapsed: 'T+' + ['00:00', '00:00', '00:30', '00:42', '01:10', '01:15', '03:40', '05:00'][s.step],
+      runTitle: s.phase === 'idle' ? 'Aguardando execução' : s.name + ' · ' + s.target,
+      events: ev, matrix, score, scoreCls: score >= 85 ? 'b-ok' : score >= 60 ? 'b-warn' : 'b-crit',
+      verdict: fails ? fails + ' verificações falharam; degradação graciosa parcial' : 'Degradação graciosa em todos os circuitos',
+      history: s.history, histOpen: s.hist, histOpenStr: s.hist ? 'true' : 'false', histLabel: s.hist ? 'Recolher' : 'Expandir', histRot: s.hist ? 180 : 0,
+      toggleHist: () => this.setState({ hist: !s.hist })
+    };
+  }
+}
+</script>
+</body>
+</html>

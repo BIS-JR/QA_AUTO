@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>05 Test Debt Scoring</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="./dc-lite.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F8FAFC;font-family:Inter,system-ui,sans-serif;color:#0F172A;font-size:14px}
+*{box-sizing:border-box}
+a{color:#2563EB}a:hover{color:#1D4ED8}
+button,input,select,textarea{font:inherit}
+:focus-visible{outline:2px solid #4F46E5;outline-offset:2px}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.top{height:56px;position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:12px;padding:0 16px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;color:#0F172A;text-decoration:none;white-space:nowrap}
+.logo:hover{color:#0F172A}
+.mark{width:28px;height:28px;border-radius:8px;background:#4F46E5;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.sel{height:36px;max-width:190px;border:1px solid #CBD5E1;border-radius:8px;padding:0 10px;background:#fff;color:#0F172A}
+.search{flex:1;min-width:0;max-width:460px;display:flex;align-items:center;gap:8px;height:36px;border:1px solid #CBD5E1;border-radius:8px;padding:0 10px;color:#64748B;background:#fff}
+.search input{border:0;outline:0;flex:1;min-width:0;background:transparent;color:#0F172A}
+.search:focus-within{box-shadow:0 0 0 2px #C7D2FE;border-color:#818CF8}
+.sp{flex:1}
+kbd{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;border:1px solid #E2E8F0;border-radius:4px;padding:1px 5px;color:#64748B}
+.ib{width:40px;height:40px;border:0;background:transparent;border-radius:8px;display:grid;place-items:center;color:#334155;cursor:pointer;position:relative;flex:none}
+.ib:hover{background:#F1F5F9}
+.cnt{position:absolute;top:3px;right:3px;min-width:17px;height:17px;border-radius:9px;background:#DC2626;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.av{width:36px;height:36px;border-radius:50%;border:0;background:#E0E7FF;color:#3730A3;display:grid;place-items:center;cursor:pointer;flex:none}
+.body{flex:1;display:flex;flex-wrap:wrap;align-items:stretch}
+.side{width:256px;background:#fff;border-right:1px solid #E2E8F0;padding:12px;display:flex;flex-direction:column;gap:2px}
+.grp{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#64748B;padding:14px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:#334155;text-decoration:none;min-height:38px}
+.nav:hover{background:#F1F5F9;color:#0F172A}
+.nav.on{background:rgba(79,70,229,.1);color:#4338CA;font-weight:600}
+.nav.on:hover{color:#4338CA}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;width:26px;height:20px;border-radius:5px;background:#F1F5F9;color:#475569;display:grid;place-items:center;flex:none}
+.nav.on .num{background:#4F46E5;color:#fff}
+.lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:#FEE2E2;color:#991B1B}
+.side.alt{width:76px}.side.alt .lbl,.side.alt .nb,.side.alt .grp{display:none}
+.navw{position:relative}
+.pip{position:absolute;left:100%;top:-8px;z-index:45;padding-left:10px;width:400px;cursor:default}
+.pipw{background:#0F172A;color:#CBD5E1;border:1px solid #334155;border-radius:12px;box-shadow:0 20px 50px rgba(15,23,42,.45);overflow:hidden;font-weight:400;animation:pipin .16s ease-out}
+@keyframes pipin{from{opacity:0;transform:translateY(4px)}}
+@media(prefers-reduced-motion:reduce){.pipw{animation:none}}
+.piph{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;background:#1E293B;color:#fff;font-size:13px}
+.piph b{flex:1;font-weight:600}
+.pipn{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;background:#4F46E5;color:#fff;border-radius:5px;padding:2px 6px}
+.pipx{width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:#CBD5E1;display:grid;place-items:center;cursor:pointer;flex:none}
+.pipx:hover{background:#334155;color:#fff}
+.pipb{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.55}
+.pipb h4{margin:0;color:#38BDF8;font-size:15px;font-weight:600}
+.pipb p{margin:0}
+.pipe{background:#1E293B;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.pipe span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#22D3EE}
+.pipm{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pipm div{background:#1E293B;border-radius:8px;padding:8px 10px}
+.pipm dt{font-size:10.5px;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em}
+.pipm dd{margin:2px 0 0;color:#fff;font-size:12px}
+@media(max-width:760px){.pip{left:0;top:100%;padding-left:0;padding-top:6px;width:100%}}
+.main{flex:999 1 560px;min-width:0;padding:24px;display:flex;flex-direction:column;gap:24px}
+.crumb{font-size:13px;color:#64748B;display:flex;gap:6px;flex-wrap:wrap}
+.crumb b{color:#334155;font-weight:500}
+.ph{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+h1{font-size:24px;font-weight:700;margin:0;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:600;margin:0}
+h3{font-size:14px;font-weight:600;margin:0}
+.sub{color:#475569;margin:4px 0 0}
+.mut{color:#64748B}
+.card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.ch{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #F1F5F9}
+.cb{padding:20px}
+.btn{height:36px;padding:0 14px;border-radius:8px;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none;font-size:14px}
+.btn.p{background:#4F46E5;color:#fff}.btn.p:hover{background:#4338CA;color:#fff}
+.btn.o{background:#fff;border-color:#CBD5E1;color:#0F172A}.btn.o:hover{background:#F8FAFC;color:#0F172A}
+.btn.g{background:transparent;color:#334155}.btn.g:hover{background:#F1F5F9}
+.btn.sm{height:32px;padding:0 10px;font-size:13px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.bd{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.b-ok{background:#DCFCE7;color:#166534}.b-warn{background:#FEF3C7;color:#92400E}.b-high{background:#FFEDD5;color:#9A3412}.b-crit{background:#FEE2E2;color:#991B1B}.b-info{background:#DBEAFE;color:#1E40AF}.b-mute{background:#F1F5F9;color:#475569}.b-pri{background:#E0E7FF;color:#3730A3}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;font-weight:600;color:#64748B;padding:10px 16px;border-bottom:1px solid #E2E8F0;white-space:nowrap;background:#F8FAFC}
+td{padding:12px 16px;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.g12{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+.toast{position:fixed;right:24px;bottom:24px;z-index:60;background:#0F172A;color:#fff;border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(15,23,42,.25);max-width:calc(100vw - 48px)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.mw{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:40;display:grid;place-items:center;padding:16px}
+.modal{width:min(900px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:12px;box-shadow:0 20px 50px rgba(15,23,42,.3);display:flex;flex-direction:column}
+.mh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid #E2E8F0;position:sticky;top:0;background:#fff;z-index:1}
+.mf{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:16px 20px;border-top:1px solid #E2E8F0;position:sticky;bottom:0;background:#fff;margin-top:auto}
+.hm{display:grid;grid-template-columns:minmax(120px,1.3fr) repeat(5,minmax(84px,1fr));gap:4px;min-width:640px}
+.hh{font-size:12px;font-weight:600;color:#475569;padding:6px 8px;display:flex;align-items:flex-end}
+.hr{font-weight:500;padding:0 8px;display:flex;align-items:center;font-size:13px}
+.cell{height:44px;border:0;border-radius:6px;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px;font-weight:500;cursor:pointer;color:#0F172A}
+.cell:hover{outline:2px solid #4F46E5;outline-offset:-2px}
+.cell.sel{outline:2px solid #0F172A;outline-offset:-2px}
+.v1{background:#DCFCE7;color:#14532D}.v2{background:#FEF3C7;color:#78350F}.v3{background:#FED7AA;color:#7C2D12}.v4{background:#FCA5A5;color:#7F1D1D}
+.rc{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid #E2E8F0;border-radius:12px;background:#fff;text-align:left;cursor:pointer;color:#0F172A}
+.rc:hover{border-color:#A5B4FC}
+.rc.sel{border-color:#4F46E5;box-shadow:0 0 0 1px #4F46E5}
+.bar{height:6px;border-radius:3px;background:#F1F5F9;overflow:hidden}
+@media(max-width:1000px){.s3{grid-column:span 6}.s4,.s5,.s6,.s7,.s8{grid-column:span 12}}
+@media(max-width:760px){.side{display:none;width:100%;border-right:0;border-bottom:1px solid #E2E8F0}.side.alt{display:flex;width:100%}.side.alt .lbl,.side.alt .nb,.side.alt .grp{display:revert}.hide-m{display:none}.main{padding:16px}.s3{grid-column:span 12}}
+</style>
+</helmet>
+<div class="app">
+<div style="height: 128px; background: #0F172A; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 0 20px"><img src="assets/fastinnovation.png" alt="Fast Innovation AI" style="height: 112px; width: auto; max-width: 100%; justify-self: start"><img src="assets/outtech.png" alt="OUTTECH Services IT" style="height: 88px; width: auto; max-width: 100%; justify-self: center"><img src="assets/qa-autonomous.png" alt="QA Autonomous" style="height: 96px; width: auto; max-width: 100%; justify-self: end"></div>
+<header class="top">
+<button class="ib" type="button" aria-label="Alternar menu lateral" onClick="{{toggleSide}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+<a class="logo" href="Main.dc.html"><span class="mark">QA</span><span class="hide-m">QA Autônomo</span></a>
+<label class="sr" for="proj">Projeto ativo</label>
+<select id="proj" class="sel"><option>Checkout Web</option><option>App Mobile</option><option>API Pagamentos</option></select>
+<div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input type="search" aria-label="Busca global" placeholder="Buscar histórias, testes, quebras…"><kbd class="hide-m">⌘K</kbd></div>
+<div class="sp"></div>
+<button class="ib" type="button" aria-label="Notificações: 4 alertas pendentes"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span class="cnt">4</span></button>
+<button class="av" type="button" aria-label="Menu do usuário"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></button>
+</header>
+<div class="body">
+<nav class="{{sideCls}}" aria-label="Navegação principal">
+<sc-for list="{{nav}}" as="g" hint-placeholder-count="3">
+<div class="grp">{{g.title}}</div>
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+<div class="navw" onMouseEnter="{{it.enter}}" onMouseLeave="{{it.leave}}" onContextMenu="{{it.ctx}}" onFocus="{{it.enter}}">
+<sc-if value="{{it.active}}" hint-placeholder-val="{{ false }}"><a class="nav on" href="{{it.href}}" aria-current="page"><span class="num">{{it.num}}</span><span class="lbl">{{it.label}}</span></a></sc-if>
+<sc-if value="{{it.off}}" hint-placeholder-val="{{ true }}"><a class="nav" href="{{it.href}}"><span class="num">{{it.num}}</span><span class="lbl">{{it.label}}</span><sc-if value="{{it.hasBadge}}" hint-placeholder-val="{{ false }}"><span class="nb">{{it.badge}}</span></sc-if></a></sc-if>
+<sc-if value="{{it.open}}" hint-placeholder-val="{{ false }}">
+<div class="pip" role="dialog" aria-label="{{it.info.title}}">
+<div class="pipw">
+<div class="piph"><span class="pipn">{{it.num}}</span><b>{{it.info.title}}</b><button type="button" class="pipx" aria-label="Fechar descrição" onClick="{{it.close}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+<div class="pipb">
+<h4>{{it.info.head}}</h4>
+<p>{{it.info.text}}</p>
+<div class="pipe"><span>Exemplo prático</span><p>{{it.info.ex}}</p></div>
+<sc-if value="{{it.info.hasMatrix}}" hint-placeholder-val="{{ true }}"><dl class="pipm"><div><dt>Atuação</dt><dd>{{it.info.tipo}}</dd></div><div><dt>Benefício</dt><dd>{{it.info.benef}}</dd></div><div><dt>Impacto</dt><dd>{{it.info.impacto}}</dd></div></dl></sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</sc-for>
+</nav>
+<main class="main">
+<div class="crumb"><span>Operar</span><span aria-hidden="true">›</span><b>05 Test Debt Scoring</b></div>
+<div class="ph">
+<div><h1>Test Debt Scoring</h1><p class="sub">Priorize o esforço de QA pelo risco: taxa de alteração × complexidade × cobertura.</p></div>
+<button class="btn p" type="button" onClick="{{prioritize}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h13M3 12h9M3 18h5M17 10v10M14 17l3 3 3-3"></path></svg>Priorizar suíte</button>
+</div>
+
+<div class="g12">
+<div class="card s8">
+<div class="ch"><div><h2>Heatmap de risco</h2><p class="sub" style="font-size:13px">Módulos × critérios. Clique em uma célula para ver os fatores.</p></div>
+<div class="row" style="gap:6px;font-size:12px;color:#475569" aria-label="Legenda de severidade"><span>Baixo</span><span class="v1" style="width:22px;height:12px;border-radius:3px"></span><span class="v2" style="width:22px;height:12px;border-radius:3px"></span><span class="v3" style="width:22px;height:12px;border-radius:3px"></span><span class="v4" style="width:22px;height:12px;border-radius:3px"></span><span>Crítico</span></div></div>
+<div class="cb tw">
+<div class="hm">
+<div class="hh"></div><div class="hh">Taxa de alteração</div><div class="hh">Complexidade ciclomática</div><div class="hh">Lacuna de cobertura</div><div class="hh">Commits sem teste</div><div class="hh">Score final</div>
+<sc-for list="{{mods}}" as="m" hint-placeholder-count="8">
+<div class="hr">{{m.name}}</div>
+<sc-for list="{{m.cells}}" as="c" hint-placeholder-count="5"><button type="button" class="{{c.cls}}" title="{{m.tip}}" aria-label="{{c.aria}}" onClick="{{m.pick}}">{{c.v}}</button></sc-for>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div class="card s4">
+<div class="ch"><div><span class="mut" style="font-size:12px">Fatores do módulo</span><h2>{{cur.name}}</h2></div><span class="bd {{cur.cls}}">Risco {{cur.level}}</span></div>
+<div class="cb" style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:6px"><div class="row" style="justify-content:space-between"><span style="font-weight:500">Taxa de alteração</span><span class="mono">{{cur.churn}} commits/30d</span></div><div class="bar"><div style="height:100%; width: {{cur.churnPct}}%; background: #4F46E5"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div class="row" style="justify-content:space-between"><span style="font-weight:500">Complexidade ciclomática média</span><span class="mono">{{cur.cx}}</span></div><div class="bar"><div style="height:100%; width: {{cur.cxPct}}%; background: #4F46E5"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div class="row" style="justify-content:space-between"><span style="font-weight:500">Cobertura</span><span class="mono">{{cur.cov}}% <span style="color: {{cur.deltaColor}}">({{cur.delta}})</span></span></div><div class="bar"><div style="height:100%; width: {{cur.cov}}%; background: #16A34A"></div></div></div>
+<div style="padding:12px 14px;border-radius:10px;background:#F8FAFC;border:1px solid #E2E8F0;font-size:13px;color:#334155">{{cur.insight}}</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<h2>Risco por módulo</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px">
+<sc-for list="{{cards}}" as="k" hint-placeholder-count="8">
+<button type="button" class="{{k.cardCls}}" onClick="{{k.pick}}">
+<div class="row" style="justify-content:space-between;width:100%"><span style="font-weight:600;font-size:15px">{{k.name}}</span><span class="bd {{k.cls}}">{{k.level}}</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%">
+<div><div class="mono" style="font-size:16px;font-weight:600">{{k.cov}}%</div><div class="mut" style="font-size:11px">cobertura</div></div>
+<div><div class="mono" style="font-size:16px;font-weight:600;color: {{k.deltaColor}}">{{k.delta}}</div><div class="mut" style="font-size:11px">delta 30d</div></div>
+<div><div class="mono" style="font-size:16px;font-weight:600">{{k.noTest}}</div><div class="mut" style="font-size:11px">commits s/ teste</div></div>
+</div>
+</button>
+</sc-for>
+</div>
+</div>
+</main>
+</div>
+
+<sc-if value="{{prioOpen}}" hint-placeholder-val="{{ false }}">
+<div class="mw">
+<div class="modal" role="dialog" aria-modal="true" aria-label="Suíte priorizada">
+<div class="mh"><div><h2>Suíte priorizada</h2><p class="sub" style="font-size:13px">Testes a criar primeiro, ordenados por redução de risco por hora de esforço</p></div><button class="ib" type="button" aria-label="Fechar" onClick="{{closePrio}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+<div class="tw"><table>
+<thead><tr><th scope="col">#</th><th scope="col">Teste sugerido</th><th scope="col">Módulo</th><th scope="col">Impacto</th><th scope="col">Esforço</th><th scope="col">Redução de risco</th></tr></thead>
+<tbody><sc-for list="{{ranking}}" as="r" hint-placeholder-count="7"><tr><td class="mono mut">{{r.rank}}</td><td style="min-width:260px;font-weight:500">{{r.test}}</td><td>{{r.mod}}</td><td><span class="bd {{r.icls}}">{{r.impact}}</span></td><td class="mono" style="font-size:13px">{{r.effort}}</td><td><div class="row" style="gap:8px;flex-wrap:nowrap"><div class="bar" style="width:80px"><div style="height:100%; width: {{r.gain}}%; background: #4F46E5"></div></div><span class="mono" style="font-size:12px">−{{r.gain}}%</span></div></td></tr></sc-for></tbody>
+</table></div>
+<div class="mf"><span class="mut" style="font-size:13px;margin-right:auto;align-self:center">Esforço total estimado: 19 h · redução de risco projetada: 41%</span><button class="btn o" type="button" onClick="{{closePrio}}">Fechar</button><button class="btn p" type="button" onClick="{{sendJira}}">Enviar para o Jira</button></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div class="toast" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{{toast}}</span></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  state = { side: false, toast: null, sel: 'Pagamentos', prio: false };
+  componentWillUnmount() { clearTimeout(this._t); }
+  toast(msg) { clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(() => this.setState({ toast: null }), 3600); }
+  navFor(active) {
+    const NAV = [
+      ['Conectar', [['fontes','FD','Fontes de dados','Fontes.dc.html'],['projetos','PJ','Projetos','Fontes.dc.html']]],
+      ['Operar', [['genesis','01','Test Case Genesis','Genesis.dc.html'],['healing','02','API Self-healing','SelfHealing.dc.html',3],['assert','03','NL Assertions','Assertions.dc.html'],['mutation','04','Mutation Testing','Mutation.dc.html'],['debt','05','Test Debt Scoring','TestDebt.dc.html'],['compliance','06','Compliance','Compliance.dc.html'],['perf','07','Performance Prediction','Performance.dc.html',1],['visual','08','Visual Regression','VisualRegression.dc.html',6],['chaos','09','Chaos Engineering','Chaos.dc.html'],['matrix','10','Browser/Device Matrix','Matrix.dc.html']]],
+      ['Analisar', [['dash','DC','Dashboard central','Main.dc.html'],['reports','RL','Relatórios','Reports.dc.html']]]
+    ];
+    const INFO = {
+      genesis: ['01. Test Case Genesis from User Story', 'Geração Nativa sem QA Humano', 'A IA interpreta requisitos e critérios de aceite descritos em histórias do Jira ou Azure DevOps, transformando-os diretamente em scripts de teste executáveis (Cypress, Playwright).', 'História: “Como cliente, quero pagar via PIX para aprovação instantânea.” A IA interpreta o critério e gera scripts automatizados validando: QR Code válido, simulação de timeout bancário e expiração do código PIX.', 'Geração de Testes', 'Cria testes diretos do Jira/Azure', 'Automação a partir do requisito'],
+      healing: ['02. API Contract Self-healing', 'Detecção Automática de Quebras', 'Identifica incompatibilidades de contrato entre microsserviços antes da ida a produção, sugerindo ou aplicando correções no schema da API e nos testes dependentes. Evita regressões em ambientes distribuídos e elimina manutenções manuais repetitivas de código de teste.', 'O time backend renomeia o campo customer_id para user_uuid na API de Checkout. A IA intercepta a quebra no CI/CD, atualiza o DTO da API nos testes integrados e submete uma Pull Request de ajuste pronta para aprovação.', 'Manutenção Autônoma', 'Corrige quebras de contratos de API', 'Redução de bugs em microsserviços'],
+      assert: ['03. Natural Language Test Assertions', 'Sem Escrever Código', 'Permite que POs e analistas de negócio escrevam validações em português fluente ou inglês simples. Por meio de tradução por LLM, a IA converte instruções semânticas diretamente em asserções dinâmicas de DOM e estado de aplicação.', '“Quando o usuário clica em comprar, o saldo deve diminuir e o carrinho deve zerar.” A IA valida os seletores e o saldo na tela.', 'Interface sem Código', 'POs escrevem validações em texto', 'Inclusão de times não técnicos'],
+      mutation: ['04. Mutation Testing com LLM', 'Avaliando a Eficácia Real dos Testes', 'O agente de IA introduz pequenas mutações deliberadas no código-fonte para checar se a suíte de testes consegue detectar os erros. Supera a métrica tradicional de cobertura de linha, garantindo que os testes realmente validem a lógica de negócios e não apenas passem passivamente.', 'A IA altera if (desconto > 50) para if (desconto >= 50). Se nenhum teste falhar, a IA alerta a vulnerabilidade e cria o teste faltante.', 'Auditoria de Testes', 'Valida eficácia real das suítes', 'Eliminação de falsos positivos'],
+      debt: ['05. Test Debt Scoring', 'Priorização de QA por Nível de Risco', 'Calcula dinamicamente a “Dívida de Testes” de cada módulo do sistema, cruzando taxa de alteração de código, complexidade ciclomática e cobertura real. Permite focar o esforço do time de QA nas áreas com maior probabilidade de impacto crítico nos negócios.', 'O módulo de Pagamentos possui 85% de cobertura, porém recebeu 30 commits recentes sem testes de borda. O sistema eleva o Score de Dívida para Risco Alto e exige reforço imediato na suíte.', 'Gestão de Risco', 'Mapeia módulos sem cobertura crítica', 'Priorização inteligente de QA'],
+      compliance: ['06. Regulatory Compliance Test Suite', 'Conformidade Regulatória Automática', 'Gera automaticamente testes focados em normas globais e locais como PCI-DSS, ISO 27001, LGPD e GDPR, ajustando-se às exigências do mercado do cliente. Fundamental para empresas do setor financeiro, e-commerce e saúde, além de acelerar processos de auditoria e exportação.', 'Para um app de pagamentos se expandindo para a Europa, a IA executa 150 testes validando criptografia de PII, retenção de logs e mecânica de consentimento explícito.', 'Conformidade', 'Suítes para PCI, LGPD, GDPR, ISO', 'Aceleração de auditorias globais'],
+      perf: ['07. Performance Prediction Model', 'Previsão Sem Testes Manuais de Carga', 'Prevê gargalos de performance em produção antes do deploy, analisando o novo código e o histórico de execuções. Substitui os caros e demorados testes de estresse manuais por análises preditivas contínuas na esteira de CI/CD.', 'Um desenvolvedor envia uma Pull Request contendo uma nova consulta com loop N+1 no banco de dados. A IA detecta a consulta e projeta degradação do tempo de resposta de 150 ms para 3,8 s quando a aplicação atingir 1.000 requisições simultâneas.', 'Análise Preditiva', 'Simula carga antes do deploy', 'Prevenção proativa de gargalos'],
+      visual: ['08. Visual Regression por Difusão', 'Acurácia Pixel a Pixel', 'Utiliza modelos de difusão treinados para comparar interfaces e identificar regressões visuais sutis que ferramentas tradicionais (como Selenium) ignoram. Filtra falsos positivos causados por renderização de fontes ou variações imperceptíveis de anti-aliasing.', 'Uma atualização de CSS move o botão “Finalizar Compra” 4px para o lado no iPhone 14. A IA identifica a quebra de alinhamento e notifica o time visual.'],
+      chaos: ['09. Chaos Engineering Autônomo', 'Resiliência Proativa de Sistemas', 'Planeja e executa experimentos de caos (injeção de latência, queda de microsserviços, saturação de CPU) de forma autônoma em staging. Gera relatórios completos indicando se a aplicação degradou de forma graciosa e se os circuitos de fallback funcionaram.', 'O agente simula a queda do banco de dados Redis durante o checkout e valida se o sistema chaveou com sucesso para o banco relacional sem derrubar a sessão do usuário.'],
+      matrix: ['10. Cross-browser / Device AI Prioritization', 'Análise Baseada no Perfil Real do Usuário', 'Conecta-se à telemetria de produção (Google Analytics, Mixpanel) para identificar exatamente quais dispositivos e navegadores geram maior tráfego, e cancela execuções de testes em combinações de navegadores legados que representam menos de 0,01% dos acessos.', 'Reduz a matriz de 120 combinações para as 8 mais críticas (ex.: Safari iOS 17 e Chrome Android), reduzindo o tempo de CI/CD de 45 para 6 minutos.']
+    };
+    const tip = this.state.tip;
+    const hide = () => { clearTimeout(this._pip); if (this.state.tip) this.setState({ tip: null }); };
+    return NAV.map(([title, items]) => ({ title, items: items.map(([id, num, label, href, badge]) => {
+      const d = INFO[id];
+      const info = d ? { title: d[0], head: d[1], text: d[2], ex: d[3], tipo: d[4], benef: d[5], impacto: d[6], hasMatrix: !!d[4] } : {};
+      return { num, label, href, badge, hasBadge: !!badge, active: id === active, off: id !== active, info, open: !!d && tip === id,
+        enter: () => { if (!d) return; clearTimeout(this._pip); this._pip = setTimeout(() => this.setState({ tip: id }), 700); },
+        leave: hide,
+        ctx: (e) => { if (!d) return; e.preventDefault(); clearTimeout(this._pip); this.setState({ tip: id }); },
+        close: hide };
+    }) }));
+  }
+  renderVals() {
+    const s = this.state;
+    // name, churn, complexity, coverage, commitsNoTest, delta, score level 1-4
+    const RAW = [
+      ['Pagamentos', 64, 14.2, 85, 30, -4, 3, 'Alta frequência de mudanças em regras de estorno sem testes correspondentes. 30 commits recentes não tocaram nenhum teste.'],
+      ['Checkout', 58, 11.8, 72, 18, -6, 4, 'Cobertura caiu 6 p.p. em 30 dias e 9 mutantes sobreviventes em cart.service.ts. Prioridade máxima.'],
+      ['Autenticação', 22, 9.4, 81, 7, 2, 2, 'Complexidade moderada; guard de sessão com mutante sobrevivente.'],
+      ['Pedidos', 41, 12.6, 68, 14, -3, 3, 'Mapper de valores sem testes de arredondamento; alteração frequente.'],
+      ['Catálogo', 12, 6.1, 90, 2, 1, 1, 'Estável e bem coberto.'],
+      ['Frete', 18, 7.8, 88, 3, 0, 1, 'Baixo risco; regras estáveis.'],
+      ['Notificações', 27, 8.9, 61, 11, -2, 2, 'Cobertura baixa, porém impacto limitado no faturamento.'],
+      ['Busca', 35, 10.3, 74, 9, -1, 2, 'Mudanças frequentes no ranking; testes de relevância insuficientes.']
+    ];
+    const LV = { 1: ['Baixo', 'b-ok'], 2: ['Médio', 'b-warn'], 3: ['Alto', 'b-high'], 4: ['Crítico', 'b-crit'] };
+    const sev = (v, a, b, c) => (v >= c ? 4 : v >= b ? 3 : v >= a ? 2 : 1);
+    const mods = RAW.map(([name, churn, cx, cov, nt, delta, lvl]) => {
+      const sv = [sev(churn, 20, 40, 60), sev(cx, 8, 11, 14), sev(100 - cov, 12, 25, 35), sev(nt, 5, 12, 25), lvl];
+      const vals = [String(churn), cx.toFixed(1), (100 - cov) + '%', String(nt), LV[lvl][0]];
+      const crit = ['Taxa de alteração', 'Complexidade', 'Lacuna de cobertura', 'Commits sem teste', 'Score final'];
+      return { name, tip: name + ' — alteração: ' + churn + ' commits/30d · complexidade: ' + cx.toFixed(1) + ' · cobertura: ' + cov + '%', pick: () => this.setState({ sel: name }),
+        cells: sv.map((v, i) => ({ v: vals[i], cls: 'cell v' + v + (s.sel === name ? ' sel' : ''), aria: name + ', ' + crit[i] + ': ' + vals[i] + ', severidade ' + LV[v][0] })) };
+    });
+    const fmtDelta = (d) => (d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d) + ' p.p.';
+    const dColor = (d) => (d < 0 ? '#B91C1C' : d > 0 ? '#15803D' : '#475569');
+    const cards = RAW.slice().sort((a, b) => b[6] - a[6] || b[4] - a[4]).map(([name, , , cov, nt, delta, lvl]) => ({ name, cov, noTest: nt, delta: fmtDelta(delta), deltaColor: dColor(delta), level: LV[lvl][0], cls: LV[lvl][1], cardCls: 'rc' + (s.sel === name ? ' sel' : ''), pick: () => this.setState({ sel: name }) }));
+    const r = RAW.find((x) => x[0] === s.sel);
+    const cur = { name: r[0], churn: r[1], churnPct: Math.min(100, Math.round(r[1] / 70 * 100)), cx: r[2].toFixed(1), cxPct: Math.min(100, Math.round(r[2] / 16 * 100)), cov: r[3], delta: fmtDelta(r[5]), deltaColor: dColor(r[5]), level: LV[r[6]][0], cls: LV[r[6]][1], insight: r[7] };
+    const ranking = [
+      ['Estorno parcial com múltiplos itens', 'Pagamentos', 'Crítico', 'b-crit', '3 h', 18],
+      ['Carrinho com quantidade zero ou negativa', 'Checkout', 'Crítico', 'b-crit', '1 h', 15],
+      ['Cupom combinado com frete grátis', 'Checkout', 'Alto', 'b-high', '2 h', 12],
+      ['Arredondamento de centavos no mapper', 'Pedidos', 'Alto', 'b-high', '1 h', 10],
+      ['Retentativa de cobrança após timeout', 'Pagamentos', 'Alto', 'b-high', '4 h', 9],
+      ['Sessão expirada com token válido', 'Autenticação', 'Médio', 'b-warn', '2 h', 6],
+      ['Relevância de busca por sinônimos', 'Busca', 'Médio', 'b-warn', '6 h', 4]
+    ].map(([test, mod, impact, icls, effort, gain], i) => ({ rank: i + 1, test, mod, impact, icls, effort, gain }));
+    return {
+      nav: this.navFor('debt'),
+      sideCls: 'side' + (s.side ? ' alt' : ''),
+      toggleSide: () => this.setState({ side: !s.side }),
+      hasToast: !!s.toast, toast: s.toast,
+      mods, cards, cur, ranking,
+      prioOpen: s.prio, prioritize: () => this.setState({ prio: true }), closePrio: () => this.setState({ prio: false }),
+      sendJira: () => { this.setState({ prio: false }); this.toast('7 tarefas criadas no Jira (projeto PAY, épico “Dívida de teste Q4”).'); }
+    };
+  }
+}
+</script>
+</body>
+</html>

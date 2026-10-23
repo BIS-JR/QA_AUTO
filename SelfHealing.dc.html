@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>02 API Contract Self-healing</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="./dc-lite.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F8FAFC;font-family:Inter,system-ui,sans-serif;color:#0F172A;font-size:14px}
+*{box-sizing:border-box}
+a{color:#2563EB}a:hover{color:#1D4ED8}
+button,input,select,textarea{font:inherit}
+:focus-visible{outline:2px solid #4F46E5;outline-offset:2px}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.top{height:56px;position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:12px;padding:0 16px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;color:#0F172A;text-decoration:none;white-space:nowrap}
+.logo:hover{color:#0F172A}
+.mark{width:28px;height:28px;border-radius:8px;background:#4F46E5;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+.sel{height:36px;max-width:190px;border:1px solid #CBD5E1;border-radius:8px;padding:0 10px;background:#fff;color:#0F172A}
+.search{flex:1;min-width:0;max-width:460px;display:flex;align-items:center;gap:8px;height:36px;border:1px solid #CBD5E1;border-radius:8px;padding:0 10px;color:#64748B;background:#fff}
+.search input{border:0;outline:0;flex:1;min-width:0;background:transparent;color:#0F172A}
+.search:focus-within{box-shadow:0 0 0 2px #C7D2FE;border-color:#818CF8}
+.sp{flex:1}
+kbd{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;border:1px solid #E2E8F0;border-radius:4px;padding:1px 5px;color:#64748B}
+.ib{width:40px;height:40px;border:0;background:transparent;border-radius:8px;display:grid;place-items:center;color:#334155;cursor:pointer;position:relative;flex:none}
+.ib:hover{background:#F1F5F9}
+.cnt{position:absolute;top:3px;right:3px;min-width:17px;height:17px;border-radius:9px;background:#DC2626;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.av{width:36px;height:36px;border-radius:50%;border:0;background:#E0E7FF;color:#3730A3;display:grid;place-items:center;cursor:pointer;flex:none}
+.body{flex:1;display:flex;flex-wrap:wrap;align-items:stretch}
+.side{width:256px;background:#fff;border-right:1px solid #E2E8F0;padding:12px;display:flex;flex-direction:column;gap:2px}
+.grp{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#64748B;padding:14px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:#334155;text-decoration:none;min-height:38px}
+.nav:hover{background:#F1F5F9;color:#0F172A}
+.nav.on{background:rgba(79,70,229,.1);color:#4338CA;font-weight:600}
+.nav.on:hover{color:#4338CA}
+.num{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;width:26px;height:20px;border-radius:5px;background:#F1F5F9;color:#475569;display:grid;place-items:center;flex:none}
+.nav.on .num{background:#4F46E5;color:#fff}
+.lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;background:#FEE2E2;color:#991B1B}
+.side.alt{width:76px}.side.alt .lbl,.side.alt .nb,.side.alt .grp{display:none}
+.navw{position:relative}
+.pip{position:absolute;left:100%;top:-8px;z-index:45;padding-left:10px;width:400px;cursor:default}
+.pipw{background:#0F172A;color:#CBD5E1;border:1px solid #334155;border-radius:12px;box-shadow:0 20px 50px rgba(15,23,42,.45);overflow:hidden;font-weight:400;animation:pipin .16s ease-out}
+@keyframes pipin{from{opacity:0;transform:translateY(4px)}}
+@media(prefers-reduced-motion:reduce){.pipw{animation:none}}
+.piph{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;background:#1E293B;color:#fff;font-size:13px}
+.piph b{flex:1;font-weight:600}
+.pipn{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:11px;background:#4F46E5;color:#fff;border-radius:5px;padding:2px 6px}
+.pipx{width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:#CBD5E1;display:grid;place-items:center;cursor:pointer;flex:none}
+.pipx:hover{background:#334155;color:#fff}
+.pipb{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.55}
+.pipb h4{margin:0;color:#38BDF8;font-size:15px;font-weight:600}
+.pipb p{margin:0}
+.pipe{background:#1E293B;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.pipe span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#22D3EE}
+.pipm{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pipm div{background:#1E293B;border-radius:8px;padding:8px 10px}
+.pipm dt{font-size:10.5px;color:#94A3B8;text-transform:uppercase;letter-spacing:.05em}
+.pipm dd{margin:2px 0 0;color:#fff;font-size:12px}
+@media(max-width:760px){.pip{left:0;top:100%;padding-left:0;padding-top:6px;width:100%}}
+.main{flex:999 1 560px;min-width:0;padding:24px;display:flex;flex-direction:column;gap:24px}
+.crumb{font-size:13px;color:#64748B;display:flex;gap:6px;flex-wrap:wrap}
+.crumb b{color:#334155;font-weight:500}
+.ph{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+h1{font-size:24px;font-weight:700;margin:0;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:600;margin:0}
+h3{font-size:14px;font-weight:600;margin:0}
+.sub{color:#475569;margin:4px 0 0}
+.mut{color:#64748B}
+.card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.ch{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #F1F5F9}
+.cb{padding:20px}
+.btn{height:36px;padding:0 14px;border-radius:8px;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none;font-size:14px}
+.btn.p{background:#4F46E5;color:#fff}.btn.p:hover{background:#4338CA;color:#fff}
+.btn.o{background:#fff;border-color:#CBD5E1;color:#0F172A}.btn.o:hover{background:#F8FAFC;color:#0F172A}
+.btn.g{background:transparent;color:#334155}.btn.g:hover{background:#F1F5F9}
+.btn.d{background:#DC2626;color:#fff}.btn.d:hover{background:#B91C1C}
+.btn.sm{height:32px;padding:0 10px;font-size:13px}
+.btn.lg{height:44px;padding:0 18px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.bd{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.b-ok{background:#DCFCE7;color:#166534}.b-warn{background:#FEF3C7;color:#92400E}.b-high{background:#FFEDD5;color:#9A3412}.b-crit{background:#FEE2E2;color:#991B1B}.b-info{background:#DBEAFE;color:#1E40AF}.b-mute{background:#F1F5F9;color:#475569}.b-pri{background:#E0E7FF;color:#3730A3}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;font-weight:600;color:#64748B;padding:10px 16px;border-bottom:1px solid #E2E8F0;white-space:nowrap;background:#F8FAFC}
+td{padding:12px 16px;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.inp{height:36px;border:1px solid #CBD5E1;border-radius:8px;padding:0 10px;background:#fff;color:#0F172A}
+.inp:focus{outline:0;box-shadow:0 0 0 2px #C7D2FE;border-color:#818CF8}
+.lab{font-size:13px;font-weight:500;color:#334155;display:flex;flex-direction:column;gap:6px}
+.seg{display:inline-flex;border:1px solid #CBD5E1;border-radius:8px;padding:2px;gap:2px;background:#fff}
+.seg button{height:30px;border:0;border-radius:6px;padding:0 12px;background:transparent;cursor:pointer;color:#334155;font-size:13px;font-weight:500}
+.seg button.on{background:#4F46E5;color:#fff}
+.g12{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+.toast{position:fixed;right:24px;bottom:24px;z-index:60;background:#0F172A;color:#fff;border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(15,23,42,.25);max-width:calc(100vw - 48px)}
+.toast a{color:#A5B4FC}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.code{background:#0F172A;color:#E2E8F0;border-radius:10px;font-size:12.5px;line-height:1.65;overflow:auto;padding:12px 0;margin:0}
+.cl{display:flex;white-space:pre;padding-right:14px;min-width:max-content}
+.cl .n{width:44px;color:#94A3B8;flex:none;text-align:right;padding-right:12px;user-select:none}
+.cl .s{width:16px;flex:none;color:#94A3B8}
+.cl.add{background:rgba(34,197,94,.16)}.cl.add .s{color:#4ADE80}
+.cl.del{background:rgba(239,68,68,.18)}.cl.del .s{color:#F87171}
+.mw{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:40;display:grid;place-items:center;padding:16px}
+.modal{width:min(820px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:12px;box-shadow:0 20px 50px rgba(15,23,42,.3);display:flex;flex-direction:column}
+.mh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid #E2E8F0;position:sticky;top:0;background:#fff;z-index:1}
+.mf{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:16px 20px;border-top:1px solid #E2E8F0;position:sticky;bottom:0;background:#fff;margin-top:auto}
+.graph{position:relative;height:400px;background:#F8FAFC;border-radius:10px;border:1px dashed #E2E8F0;overflow:hidden}
+.node{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:999px;border:1px solid #CBD5E1;background:#fff;color:#0F172A;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;box-shadow:0 1px 2px rgba(15,23,42,.06)}
+.node:hover{border-color:#818CF8}
+.node .dt{width:8px;height:8px;border-radius:50%;background:#16A34A}
+.node.warn{border-color:#D97706;background:#FFFBEB}.node.warn .dt{background:#D97706}
+.node.bad{border-color:#DC2626;background:#FEF2F2;color:#991B1B;animation:blink 1.4s ease-in-out infinite}.node.bad .dt{background:#DC2626}
+@keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}50%{box-shadow:0 0 0 10px rgba(220,38,38,0)}}
+@media(prefers-reduced-motion:reduce){.node.bad{animation:none}}
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tli{display:flex;gap:14px;position:relative;padding:0 0 18px}
+.tli::before{content:"";position:absolute;left:7px;top:18px;bottom:0;width:2px;background:#E2E8F0}
+.tli:last-child::before{display:none}
+.tdot{width:16px;height:16px;border-radius:50%;flex:none;margin-top:2px;border:3px solid #fff;box-shadow:0 0 0 1px #CBD5E1}
+.tbtn{flex:1;min-width:0;text-align:left;border:1px solid #E2E8F0;border-radius:10px;background:#fff;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;color:#0F172A}
+.tbtn:hover{border-color:#A5B4FC;background:#FAFAFF}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #E2E8F0;border-radius:10px;cursor:pointer;flex:1;min-width:220px}
+.opt input{margin-top:3px;accent-color:#4F46E5}
+@media(max-width:1000px){.s3{grid-column:span 6}.s4,.s5,.s6,.s7,.s8{grid-column:span 12}}
+@media(max-width:760px){.side{display:none;width:100%;border-right:0;border-bottom:1px solid #E2E8F0}.side.alt{display:flex;width:100%}.side.alt .lbl,.side.alt .nb,.side.alt .grp{display:revert}.hide-m{display:none}.main{padding:16px}.s3{grid-column:span 12}.node{font-size:11px;padding:0 10px}}
+</style>
+</helmet>
+<div class="app">
+<div style="height: 128px; background: #0F172A; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 0 20px"><img src="assets/fastinnovation.png" alt="Fast Innovation AI" style="height: 112px; width: auto; max-width: 100%; justify-self: start"><img src="assets/outtech.png" alt="OUTTECH Services IT" style="height: 88px; width: auto; max-width: 100%; justify-self: center"><img src="assets/qa-autonomous.png" alt="QA Autonomous" style="height: 96px; width: auto; max-width: 100%; justify-self: end"></div>
+<header class="top">
+<button class="ib" type="button" aria-label="Alternar menu lateral" onClick="{{toggleSide}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+<a class="logo" href="Main.dc.html"><span class="mark">QA</span><span class="hide-m">QA Autônomo</span></a>
+<label class="sr" for="proj">Projeto ativo</label>
+<select id="proj" class="sel"><option>Checkout Web</option><option>App Mobile</option><option>API Pagamentos</option></select>
+<div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input type="search" aria-label="Busca global" placeholder="Buscar histórias, testes, quebras…"><kbd class="hide-m">⌘K</kbd></div>
+<div class="sp"></div>
+<button class="ib" type="button" aria-label="Notificações: 4 alertas pendentes"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span class="cnt">4</span></button>
+<button class="av" type="button" aria-label="Menu do usuário"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></button>
+</header>
+<div class="body">
+<nav class="{{sideCls}}" aria-label="Navegação principal">
+<sc-for list="{{nav}}" as="g" hint-placeholder-count="3">
+<div class="grp">{{g.title}}</div>
+<sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+<div class="navw" onMouseEnter="{{it.enter}}" onMouseLeave="{{it.leave}}" onContextMenu="{{it.ctx}}" onFocus="{{it.enter}}">
+<sc-if value="{{it.active}}" hint-placeholder-val="{{ false }}"><a class="nav on" href="{{it.href}}" aria-current="page"><span class="num">{{it.num}}</span><span class="lbl">{{it.label}}</span></a></sc-if>
+<sc-if value="{{it.off}}" hint-placeholder-val="{{ true }}"><a class="nav" href="{{it.href}}"><span class="num">{{it.num}}</span><span class="lbl">{{it.label}}</span><sc-if value="{{it.hasBadge}}" hint-placeholder-val="{{ false }}"><span class="nb">{{it.badge}}</span></sc-if></a></sc-if>
+<sc-if value="{{it.open}}" hint-placeholder-val="{{ false }}">
+<div class="pip" role="dialog" aria-label="{{it.info.title}}">
+<div class="pipw">
+<div class="piph"><span class="pipn">{{it.num}}</span><b>{{it.info.title}}</b><button type="button" class="pipx" aria-label="Fechar descrição" onClick="{{it.close}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+<div class="pipb">
+<h4>{{it.info.head}}</h4>
+<p>{{it.info.text}}</p>
+<div class="pipe"><span>Exemplo prático</span><p>{{it.info.ex}}</p></div>
+<sc-if value="{{it.info.hasMatrix}}" hint-placeholder-val="{{ true }}"><dl class="pipm"><div><dt>Atuação</dt><dd>{{it.info.tipo}}</dd></div><div><dt>Benefício</dt><dd>{{it.info.benef}}</dd></div><div><dt>Impacto</dt><dd>{{it.info.impacto}}</dd></div></dl></sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</sc-for>
+</nav>
+<main class="main">
+<div class="crumb"><span>Operar</span><span aria-hidden="true">›</span><b>02 API Contract Self-healing</b></div>
+<div class="ph">
+<div><h1>API Contract Self-healing</h1><p class="sub">Monitora contratos entre microsserviços e propõe autocorreção de DTOs e testes afetados.</p></div>
+<div class="row"><span class="bd b-mute">8 serviços · 9 contratos</span><button class="btn o" type="button" onClick="{{rescan}}">Reanalisar contratos</button></div>
+</div>
+
+<sc-if value="{{hasCritical}}" hint-placeholder-val="{{ true }}">
+<div role="alert" style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:12px;background:#FEF2F2;border:1px solid #FECACA;color:#7F1D1D"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:1px"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg><div><b>{{criticalCount}} quebra crítica não resolvida.</b> O campo <code>customer_id</code> foi renomeado para <code>user_uuid</code> em customers-svc e quebra 6 asserções em orders-api.</div></div>
+</sc-if>
+<sc-if value="{{allGood}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:12px;background:#F0FDF4;border:1px solid #BBF7D0;color:#14532D"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><b>Todos os contratos íntegros.</b> Nenhuma quebra pendente no projeto.</div>
+</sc-if>
+
+<div class="g12">
+<div class="card s8">
+<div class="ch"><div><h2>Mapa de dependências</h2><p class="sub" style="font-size:13px">Nós são microsserviços; linhas são contratos. Clique em um nó com quebra para ver o detalhe.</p></div>
+<div class="row" style="gap:14px;font-size:12px;color:#475569"><span class="row" style="gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#16A34A"></span>Íntegro</span><span class="row" style="gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#D97706"></span>Correção pendente</span><span class="row" style="gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#DC2626"></span>Quebra crítica</span></div></div>
+<div class="cb">
+<div class="graph">
+<svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%" aria-hidden="true" style="position:absolute;inset:0">
+<path d="{{edgesOk}}" stroke="#CBD5E1" stroke-width="1.5" fill="none" vector-effect="non-scaling-stroke"></path>
+<path d="{{edgesWarn}}" stroke="#D97706" stroke-width="2" stroke-dasharray="6 4" fill="none" vector-effect="non-scaling-stroke"></path>
+<path d="{{edgesBad}}" stroke="#DC2626" stroke-width="2.5" stroke-dasharray="6 4" fill="none" vector-effect="non-scaling-stroke"></path>
+</svg>
+<sc-for list="{{nodes}}" as="nd" hint-placeholder-count="8">
+<button type="button" class="{{nd.cls}}" style="left: {{nd.x}}%; top: {{nd.y}}%" onClick="{{nd.open}}" aria-label="{{nd.aria}}"><span class="dt"></span>{{nd.name}}</button>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div class="card s4">
+<div class="ch"><div><h2>Timeline de quebras</h2><p class="sub" style="font-size:13px">Últimos 7 dias</p></div></div>
+<div class="cb">
+<ol class="tl">
+<sc-for list="{{breaks}}" as="b" hint-placeholder-count="4">
+<li class="tli"><span class="tdot" style="background: {{b.dot}}"></span>
+<button type="button" class="tbtn" onClick="{{b.open}}">
+<span class="row" style="justify-content:space-between;width:100%"><span class="mono" style="font-size:12px;color:#475569">{{b.when}}</span><span class="bd {{b.cls}}">{{b.statusLabel}}</span></span>
+<span style="font-weight:600">{{b.service}}</span>
+<span class="mono" style="font-size:12px;color:#334155">{{b.from}} → {{b.to}}</span>
+</button>
+</li>
+</sc-for>
+</ol>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<sc-if value="{{modalOpen}}" hint-placeholder-val="{{ false }}">
+<div class="mw">
+<div class="modal" role="dialog" aria-modal="true" aria-label="Detalhe da quebra de contrato">
+<div class="mh">
+<div><div class="row"><span class="bd {{cur.cls}}">{{cur.statusLabel}}</span><span class="mono mut" style="font-size:12px">{{cur.when}}</span></div><h2 style="margin-top:6px">{{cur.title}}</h2></div>
+<button class="ib" type="button" aria-label="Fechar" onClick="{{close}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+</div>
+<div style="padding:20px;display:flex;flex-direction:column;gap:18px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+<div style="border:1px solid #FECACA;background:#FEF2F2;border-radius:10px;padding:14px"><div style="font-size:12px;color:#991B1B;font-weight:600">Antes</div><div class="mono" style="font-size:16px;margin-top:4px">{{cur.from}}</div><div class="mono mut" style="font-size:12px">{{cur.fromType}}</div></div>
+<div style="border:1px solid #BBF7D0;background:#F0FDF4;border-radius:10px;padding:14px"><div style="font-size:12px;color:#166534;font-weight:600">Depois</div><div class="mono" style="font-size:16px;margin-top:4px">{{cur.to}}</div><div class="mono mut" style="font-size:12px">{{cur.toType}}</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px"><h3>Diff do DTO proposto</h3><span class="mono mut" style="font-size:12px">{{cur.file}}</span>
+<pre class="code"><sc-for list="{{cur.diff}}" as="l" hint-placeholder-count="8"><div class="{{l.cls}}"><span class="n">{{l.n}}</span><span class="s">{{l.sign}}</span><span>{{l.t}}</span></div></sc-for></pre></div>
+<div style="display:flex;flex-direction:column;gap:8px"><h3>Testes afetados ({{cur.testCount}})</h3>
+<ul style="margin:0;padding:0;list-style:none;border:1px solid #E2E8F0;border-radius:10px">
+<sc-for list="{{cur.tests}}" as="t" hint-placeholder-count="3"><li style="display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid #F1F5F9"><span class="mono" style="font-size:12.5px">{{t.file}}</span><span class="mut" style="font-size:12px">{{t.info}}</span></li></sc-for>
+</ul></div>
+<fieldset style="border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"><legend style="font-weight:600;padding:0;margin-bottom:8px">Política de correção</legend>
+<div class="row" style="gap:10px;align-items:stretch">
+<label class="opt"><input type="radio" name="pol" checked="{{polAuto}}" onChange="{{setAuto}}"><span><b style="display:block">Aplicar automaticamente</b><span class="mut" style="font-size:12px">Correções de baixo risco são aplicadas e mergeadas sem revisão.</span></span></label>
+<label class="opt"><input type="radio" name="pol" checked="{{polManual}}" onChange="{{setManual}}"><span><b style="display:block">Aguardar aprovação</b><span class="mut" style="font-size:12px">Uma pessoa do time revisa antes de aplicar.</span></span></label>
+</div>
+</fieldset>
+</div>
+<div class="mf">
+<button class="btn g" type="button" onClick="{{ignore}}">Ignorar</button>
+<button class="btn o" type="button" onClick="{{openPr}}">Abrir PR</button>
+<button class="btn p" type="button" onClick="{{approve}}" disabled="{{curResolved}}">Aprovar auto-correção</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}"><div class="toast" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>{{toast}}</span></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  state = { side: false, toast: null, open: null, policy: 'manual', status: { b1: 'open', b2: 'pending', b3: 'resolved', b4: 'resolved' } };
+  componentWillUnmount() { clearTimeout(this._t); }
+  toast(msg) { clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(() => this.setState({ toast: null }), 3600); }
+  navFor(active) {
+    const NAV = [
+      ['Conectar', [['fontes','FD','Fontes de dados','Fontes.dc.html'],['projetos','PJ','Projetos','Fontes.dc.html']]],
+      ['Operar', [['genesis','01','Test Case Genesis','Genesis.dc.html'],['healing','02','API Self-healing','SelfHealing.dc.html',3],['assert','03','NL Assertions','Assertions.dc.html'],['mutation','04','Mutation Testing','Mutation.dc.html'],['debt','05','Test Debt Scoring','TestDebt.dc.html'],['compliance','06','Compliance','Compliance.dc.html'],['perf','07','Performance Prediction','Performance.dc.html',1],['visual','08','Visual Regression','VisualRegression.dc.html',6],['chaos','09','Chaos Engineering','Chaos.dc.html'],['matrix','10','Browser/Device Matrix','Matrix.dc.html']]],
+      ['Analisar', [['dash','DC','Dashboard central','Main.dc.html'],['reports','RL','Relatórios','Reports.dc.html']]]
+    ];
+    const INFO = {
+      genesis: ['01. Test Case Genesis from User Story', 'Geração Nativa sem QA Humano', 'A IA interpreta requisitos e critérios de aceite descritos em histórias do Jira ou Azure DevOps, transformando-os diretamente em scripts de teste executáveis (Cypress, Playwright).', 'História: “Como cliente, quero pagar via PIX para aprovação instantânea.” A IA interpreta o critério e gera scripts automatizados validando: QR Code válido, simulação de timeout bancário e expiração do código PIX.', 'Geração de Testes', 'Cria testes diretos do Jira/Azure', 'Automação a partir do requisito'],
+      healing: ['02. API Contract Self-healing', 'Detecção Automática de Quebras', 'Identifica incompatibilidades de contrato entre microsserviços antes da ida a produção, sugerindo ou aplicando correções no schema da API e nos testes dependentes. Evita regressões em ambientes distribuídos e elimina manutenções manuais repetitivas de código de teste.', 'O time backend renomeia o campo customer_id para user_uuid na API de Checkout. A IA intercepta a quebra no CI/CD, atualiza o DTO da API nos testes integrados e submete uma Pull Request de ajuste pronta para aprovação.', 'Manutenção Autônoma', 'Corrige quebras de contratos de API', 'Redução de bugs em microsserviços'],
+      assert: ['03. Natural Language Test Assertions', 'Sem Escrever Código', 'Permite que POs e analistas de negócio escrevam validações em português fluente ou inglês simples. Por meio de tradução por LLM, a IA converte instruções semânticas diretamente em asserções dinâmicas de DOM e estado de aplicação.', '“Quando o usuário clica em comprar, o saldo deve diminuir e o carrinho deve zerar.” A IA valida os seletores e o saldo na tela.', 'Interface sem Código', 'POs escrevem validações em texto', 'Inclusão de times não técnicos'],
+      mutation: ['04. Mutation Testing com LLM', 'Avaliando a Eficácia Real dos Testes', 'O agente de IA introduz pequenas mutações deliberadas no código-fonte para checar se a suíte de testes consegue detectar os erros. Supera a métrica tradicional de cobertura de linha, garantindo que os testes realmente validem a lógica de negócios e não apenas passem passivamente.', 'A IA altera if (desconto > 50) para if (desconto >= 50). Se nenhum teste falhar, a IA alerta a vulnerabilidade e cria o teste faltante.', 'Auditoria de Testes', 'Valida eficácia real das suítes', 'Eliminação de falsos positivos'],
+      debt: ['05. Test Debt Scoring', 'Priorização de QA por Nível de Risco', 'Calcula dinamicamente a “Dívida de Testes” de cada módulo do sistema, cruzando taxa de alteração de código, complexidade ciclomática e cobertura real. Permite focar o esforço do time de QA nas áreas com maior probabilidade de impacto crítico nos negócios.', 'O módulo de Pagamentos possui 85% de cobertura, porém recebeu 30 commits recentes sem testes de borda. O sistema eleva o Score de Dívida para Risco Alto e exige reforço imediato na suíte.', 'Gestão de Risco', 'Mapeia módulos sem cobertura crítica', 'Priorização inteligente de QA'],
+      compliance: ['06. Regulatory Compliance Test Suite', 'Conformidade Regulatória Automática', 'Gera automaticamente testes focados em normas globais e locais como PCI-DSS, ISO 27001, LGPD e GDPR, ajustando-se às exigências do mercado do cliente. Fundamental para empresas do setor financeiro, e-commerce e saúde, além de acelerar processos de auditoria e exportação.', 'Para um app de pagamentos se expandindo para a Europa, a IA executa 150 testes validando criptografia de PII, retenção de logs e mecânica de consentimento explícito.', 'Conformidade', 'Suítes para PCI, LGPD, GDPR, ISO', 'Aceleração de auditorias globais'],
+      perf: ['07. Performance Prediction Model', 'Previsão Sem Testes Manuais de Carga', 'Prevê gargalos de performance em produção antes do deploy, analisando o novo código e o histórico de execuções. Substitui os caros e demorados testes de estresse manuais por análises preditivas contínuas na esteira de CI/CD.', 'Um desenvolvedor envia uma Pull Request contendo uma nova consulta com loop N+1 no banco de dados. A IA detecta a consulta e projeta degradação do tempo de resposta de 150 ms para 3,8 s quando a aplicação atingir 1.000 requisições simultâneas.', 'Análise Preditiva', 'Simula carga antes do deploy', 'Prevenção proativa de gargalos'],
+      visual: ['08. Visual Regression por Difusão', 'Acurácia Pixel a Pixel', 'Utiliza modelos de difusão treinados para comparar interfaces e identificar regressões visuais sutis que ferramentas tradicionais (como Selenium) ignoram. Filtra falsos positivos causados por renderização de fontes ou variações imperceptíveis de anti-aliasing.', 'Uma atualização de CSS move o botão “Finalizar Compra” 4px para o lado no iPhone 14. A IA identifica a quebra de alinhamento e notifica o time visual.'],
+      chaos: ['09. Chaos Engineering Autônomo', 'Resiliência Proativa de Sistemas', 'Planeja e executa experimentos de caos (injeção de latência, queda de microsserviços, saturação de CPU) de forma autônoma em staging. Gera relatórios completos indicando se a aplicação degradou de forma graciosa e se os circuitos de fallback funcionaram.', 'O agente simula a queda do banco de dados Redis durante o checkout e valida se o sistema chaveou com sucesso para o banco relacional sem derrubar a sessão do usuário.'],
+      matrix: ['10. Cross-browser / Device AI Prioritization', 'Análise Baseada no Perfil Real do Usuário', 'Conecta-se à telemetria de produção (Google Analytics, Mixpanel) para identificar exatamente quais dispositivos e navegadores geram maior tráfego, e cancela execuções de testes em combinações de navegadores legados que representam menos de 0,01% dos acessos.', 'Reduz a matriz de 120 combinações para as 8 mais críticas (ex.: Safari iOS 17 e Chrome Android), reduzindo o tempo de CI/CD de 45 para 6 minutos.']
+    };
+    const tip = this.state.tip;
+    const hide = () => { clearTimeout(this._pip); if (this.state.tip) this.setState({ tip: null }); };
+    return NAV.map(([title, items]) => ({ title, items: items.map(([id, num, label, href, badge]) => {
+      const d = INFO[id];
+      const info = d ? { title: d[0], head: d[1], text: d[2], ex: d[3], tipo: d[4], benef: d[5], impacto: d[6], hasMatrix: !!d[4] } : {};
+      return { num, label, href, badge, hasBadge: !!badge, active: id === active, off: id !== active, info, open: !!d && tip === id,
+        enter: () => { if (!d) return; clearTimeout(this._pip); this._pip = setTimeout(() => this.setState({ tip: id }), 700); },
+        leave: hide,
+        ctx: (e) => { if (!d) return; e.preventDefault(); clearTimeout(this._pip); this.setState({ tip: id }); },
+        close: hide };
+    }) }));
+  }
+  diff(rows) { let n = 0; return rows.map(([k, t]) => ({ n: ++n, t, cls: 'cl' + (k === ' ' ? '' : k === '+' ? ' add' : ' del'), sign: k === '-' ? '−' : k })); }
+  renderVals() {
+    const s = this.state;
+    const POS = { 'api-gateway': [50, 11], 'checkout-web': [16, 33], 'orders-api': [48, 46], 'payments-svc': [82, 30], 'customers-svc': [80, 74], 'inventory-svc': [20, 72], 'notifications': [50, 89], 'shipping-svc': [16, 92] };
+    const EDGES = [['api-gateway','checkout-web'],['api-gateway','orders-api'],['api-gateway','payments-svc'],['checkout-web','orders-api'],['orders-api','inventory-svc'],['orders-api','customers-svc'],['payments-svc','customers-svc'],['orders-api','notifications'],['inventory-svc','shipping-svc']];
+    const BREAKS = [
+      { id: 'b1', when: '21/10 · 10:42', service: 'customers-svc → orders-api', a: 'orders-api', b: 'customers-svc', node: 'customers-svc', from: 'customer_id', to: 'user_uuid', fromType: 'number', toType: 'string (UUID v4)', sev: 'Crítico',
+        title: 'Campo renomeado em customers-svc', file: 'orders-api/src/dto/order-customer.dto.ts',
+        diff: [[' ', 'export interface OrderCustomerDTO {'], ['-', '  customer_id: number;'], ['+', '  user_uuid: string;'], [' ', '  name: string;'], [' ', '  email: string;'], [' ', '}'], [' ', ''], ['-', 'const id = payload.customer_id;'], ['+', 'const id = payload.user_uuid;']],
+        tests: [['tests/contract/orders.contract.spec.ts', '4 asserções'], ['tests/e2e/checkout-flow.spec.ts', '2 asserções'], ['pacts/orders-customers.pact.json', 'contrato Pact']] },
+      { id: 'b2', when: '21/10 · 08:15', service: 'payments-svc', a: 'api-gateway', b: 'payments-svc', node: 'payments-svc', from: 'amount', to: 'amount', fromType: 'integer (centavos)', toType: 'string (decimal "149.90")', sev: 'Alto',
+        title: 'Tipo alterado em payments-svc', file: 'checkout-web/src/api/payment.dto.ts',
+        diff: [[' ', 'export interface PaymentDTO {'], ['-', '  amount: number; // centavos'], ['+', '  amount: string; // decimal'], [' ', '  currency: "BRL";'], [' ', '}'], [' ', ''], ['-', 'const total = p.amount / 100;'], ['+', 'const total = Number(p.amount);']],
+        tests: [['tests/contract/payments.contract.spec.ts', '3 asserções'], ['tests/unit/totals.spec.ts', '1 asserção']] },
+      { id: 'b3', when: '20/10 · 17:30', service: 'inventory-svc', a: 'orders-api', b: 'inventory-svc', node: 'inventory-svc', from: 'sku', to: 'sku_code', fromType: 'string', toType: 'string', sev: 'Médio',
+        title: 'Campo renomeado em inventory-svc', file: 'orders-api/src/dto/stock.dto.ts',
+        diff: [[' ', 'export interface StockDTO {'], ['-', '  sku: string;'], ['+', '  sku_code: string;'], [' ', '  available: number;'], [' ', '}']],
+        tests: [['tests/contract/inventory.contract.spec.ts', '2 asserções']] },
+      { id: 'b4', when: '18/10 · 14:05', service: 'notifications', a: 'orders-api', b: 'notifications', node: 'notifications', from: 'channel', to: 'channels[]', fromType: 'string', toType: 'string[]', sev: 'Baixo',
+        title: 'Campo virou lista em notifications', file: 'orders-api/src/dto/notify.dto.ts',
+        diff: [[' ', 'export interface NotifyDTO {'], ['-', '  channel: "email" | "sms";'], ['+', '  channels: Array<"email" | "sms" | "push">;'], [' ', '}']],
+        tests: [['tests/contract/notify.contract.spec.ts', '1 asserção']] }
+    ];
+    const ST = { open: ['Quebra crítica', 'b-crit', '#DC2626'], pending: ['Correção pendente', 'b-warn', '#D97706'], resolved: ['Resolvido · PR mergeada', 'b-ok', '#16A34A'] };
+    const pt = (n) => POS[n][0] + ' ' + POS[n][1];
+    const edgeState = (a, b) => { const br = BREAKS.find((x) => ((x.a === a && x.b === b) || (x.a === b && x.b === a))); return br ? s.status[br.id] : 'resolved'; };
+    const pathOf = (want) => EDGES.filter(([a, b]) => (edgeState(a, b) === want) || (want === 'resolved' && edgeState(a, b) === 'resolved')).map(([a, b]) => 'M' + pt(a) + ' L' + pt(b)).join(' ') || 'M0 0';
+    const nodeState = (n) => { const brs = BREAKS.filter((x) => x.node === n).map((x) => s.status[x.id]); return brs.includes('open') ? 'bad' : brs.includes('pending') ? 'warn' : ''; };
+    const nodes = Object.keys(POS).map((name) => { const st = nodeState(name); const br = BREAKS.find((x) => x.node === name && s.status[x.id] !== 'resolved') || BREAKS.find((x) => x.node === name); return { name, x: POS[name][0], y: POS[name][1], cls: 'node' + (st ? ' ' + st : ''), aria: name + (st === 'bad' ? ': quebra crítica' : st === 'warn' ? ': correção pendente' : ': íntegro'), open: () => br ? this.setState({ open: br.id }) : this.toast(name + ': todos os contratos íntegros.') }; });
+    const breaks = BREAKS.map((b) => { const st = ST[s.status[b.id]]; return { ...b, statusLabel: st[0], cls: st[1], dot: st[2], open: () => this.setState({ open: b.id }) }; });
+    const c = breaks.find((x) => x.id === s.open);
+    const crit = BREAKS.filter((x) => s.status[x.id] === 'open').length;
+    const unresolved = BREAKS.filter((x) => s.status[x.id] !== 'resolved').length;
+    const resolve = (msg) => { const id = s.open; this.setState({ open: null, status: { ...s.status, [id]: 'resolved' } }); this.toast(msg); };
+    return {
+      nav: this.navFor('healing'),
+      sideCls: 'side' + (s.side ? ' alt' : ''),
+      toggleSide: () => this.setState({ side: !s.side }),
+      hasToast: !!s.toast, toast: s.toast,
+      edgesOk: pathOf('resolved'), edgesWarn: pathOf('pending'), edgesBad: pathOf('open'),
+      nodes, breaks,
+      hasCritical: crit > 0, criticalCount: crit, allGood: unresolved === 0,
+      rescan: () => this.toast('Reanálise iniciada em 9 contratos.'),
+      modalOpen: !!c,
+      cur: c ? { ...c, diff: this.diff(c.diff), tests: c.tests.map(([file, info]) => ({ file, info })), testCount: c.tests.length } : { diff: [], tests: [] },
+      curResolved: c ? s.status[c.id] === 'resolved' : false,
+      polAuto: s.policy === 'auto', polManual: s.policy === 'manual',
+      setAuto: () => this.setState({ policy: 'auto' }), setManual: () => this.setState({ policy: 'manual' }),
+      close: () => this.setState({ open: null }),
+      approve: () => resolve('Auto-correção aprovada: PR #493 criada e mergeada. Contrato normalizado.'),
+      openPr: () => { this.setState({ open: null, status: { ...s.status, [s.open]: s.status[s.open] === 'resolved' ? 'resolved' : 'pending' } }); this.toast('PR #493 aberta para revisão no GitHub.'); },
+      ignore: () => { this.setState({ open: null }); this.toast('Quebra ignorada por 7 dias.'); }
+    };
+  }
+}
+</script>
+</body>
+</html>
