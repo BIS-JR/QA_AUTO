@@ -21,7 +21,7 @@ No menu lateral, pare o cursor sobre uma funcionalidade (01 a 10) ou clique com 
 index.html          → redireciona para Login.dc.html
 *.dc.html           → uma tela por arquivo (template + lógica)
 dc-lite.js          → runtime que renderiza as telas com React 18
-assets/             → logos (Fast Innovation AI, OUTTECH, QA Autonomous)
+assets/             → logos (Fast Innovation AI, QA Autonomous)
 ```
 
 Cada tela tem um template dentro de `<x-dc>` (com `{{ campo }}`, `<sc-for>` e `<sc-if>`) e uma classe `Component extends DCLogic` em `<script type="text/x-dc">`, cujo `renderVals()` fornece os dados e as ações da tela.
